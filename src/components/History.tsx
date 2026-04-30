@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { History as HistoryIcon, ArrowLeft, Clock, User, Hash, CheckCircle2, Circle, Search, Filter, Car, X } from 'lucide-react';
+import { History as HistoryIcon, ArrowLeft, Clock, User, Hash, CheckCircle2, Circle, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, type VehicleEntry } from '../services/db';
 

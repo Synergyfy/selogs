@@ -7,7 +7,7 @@ interface StaffCheckInProps {
   orgName?: string;
 }
 
-const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn, orgName }) => {
+const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn }) => {
   const [staffId, setStaffId] = useState('');
   const [staffName, setStaffName] = useState('');
 

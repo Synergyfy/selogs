@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, X, Check, Loader2, Edit3, Phone, RotateCcw, StickyNote, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { performOCR, preprocessImage } from '../services/ocr';
+import { performOCR } from '../services/ocr';
 
 interface NewEntryProps {
   onSave: (data: { plateNumber: string; phoneNumber?: string; notes?: string; image?: Blob }) => void;
@@ -38,7 +38,7 @@ const NewEntry: React.FC<NewEntryProps> = ({ onSave, onCancel }) => {
         const blob = await res.blob();
         setImageBlob(blob);
         
-        const result = await performOCR(processedBlob);
+        const result = await performOCR(blob);
         
         setPlateNumber(result.text);
         setOcrSource(result.isCloud ? 'Cloud' : 'Local');
