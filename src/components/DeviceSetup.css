@@ -1,0 +1,146 @@
+/* Device Setup Specific Styles */
+
+.setup-card-container {
+  max-width: 520px;
+}
+
+.code-section {
+  text-align: center;
+  margin-bottom: 32px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.code-section label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.org-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 12px;
+}
+
+.org-code {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: monospace;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.copy-btn.copied {
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.code-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding: 0 8px;
+}
+
+.setup-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.step-icon-wrapper {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background-color: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+.step-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.step-content h4 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.step-content p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.step-content strong {
+  color: var(--accent);
+}
+
+.setup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mt-12 {
+  margin-top: 12px;
+}

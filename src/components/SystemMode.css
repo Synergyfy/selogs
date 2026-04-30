@@ -1,0 +1,100 @@
+/* System Mode Specific Styles */
+
+.mode-card-container {
+  max-width: 600px; /* Slightly wider for the grid */
+}
+
+.modes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+@media (min-width: 480px) {
+  .modes-grid {
+    grid-template-columns: 1fr; /* Stack vertically for better descriptions on mobile */
+  }
+}
+
+.mode-selection-card {
+  padding: 20px;
+  border-radius: 16px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  text-align: left;
+}
+
+.mode-selection-card:hover {
+  transform: translateY(-2px);
+  background-color: var(--bg-card);
+  border-color: var(--border);
+}
+
+.mode-selection-card.active {
+  background-color: var(--bg-card);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-subtle);
+}
+
+.mode-selection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mode-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.mode-icon-wrapper.hotel {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.mode-icon-wrapper.estate {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.mode-icon-wrapper.security {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+}
+
+.selected-indicator {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.mode-selection-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.mode-selection-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
