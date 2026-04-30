@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
@@ -50,6 +50,15 @@ const LoginPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <button 
+            type="button" 
+            className="back-btn" 
+            onClick={() => navigate(-1)}
+            title="Go Back"
+          >
+            <ArrowLeft className="icon-sm" />
+          </button>
+
           <div className="auth-header">
             <h2>Welcome Back</h2>
             <p>Access your vehicle capture command center.</p>

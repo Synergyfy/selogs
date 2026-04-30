@@ -253,7 +253,7 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
 function App() {
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('themeMode') as ThemeMode;
-    return saved || 'dark';
+    return saved || 'light';
   });
 
   // Calculate effective theme
