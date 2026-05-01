@@ -12,6 +12,7 @@ interface AuthContextType {
   user: AuthUser | null;
   organization: Organization | null;
   login: (staffId: string) => Promise<boolean>;
+  loginAsDemo: (role?: UserRole) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   userRole: UserRole | null;
@@ -80,6 +81,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  const loginAsDemo = async (role: UserRole = 'admin') => {
+    setIsLoading(true);
+    const demoUser = {
+      id: 'demo-id',
+      name: 'Demo Admin',
+      role: role,
+      isAuthenticated: true
+    };
+    setUser(demoUser);
+    
+    // Ensure we have a mock organization for demo mode
+    if (!organization) {
+      const mockOrg = {
+        id: 'local-org',
+        code: 'DEMO',
+        name: 'Demo Organization',
+        industry: 'General',
+        plan: 'business' as const,
+        joinedDate: Date.now(),
+        syncStatus: false,
+        updatedAt: Date.now()
+      };
+      setOrganization(mockOrg);
+      localStorage.setItem('orgInfo', JSON.stringify(mockOrg));
+    }
+
+    await db.settings.put({
+      id: 'current_session',
+      staffId: 'demo-id',
+      staffName: 'Demo Admin',
+      deviceId: localStorage.getItem('deviceId') || 'unknown'
+    });
+    setIsLoading(false);
+  };
+
   const logout = async () => {
     await db.settings.delete('current_session');
     setUser(null);
@@ -90,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user, 
       organization, 
       login, 
+      loginAsDemo,
       logout, 
       isLoading,
       userRole: user?.role || null

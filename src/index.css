@@ -211,7 +211,7 @@ img { max-width: 100%; display: block; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding: 14px 24px;
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -284,7 +284,7 @@ img { max-width: 100%; display: block; }
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 
 .form-input {
@@ -491,7 +491,7 @@ img { max-width: 100%; display: block; }
   padding: 32px 24px;
   border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--accent) 0%, #1d4ed8 100%);
-  color: #fff;
+  color: var(--on-accent);
   border: none;
   cursor: pointer;
   transition: all var(--transition);
@@ -1555,7 +1555,7 @@ img { max-width: 100%; display: block; }
 
 .ocr-source-badge.cloud {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .ocr-source-badge.local {
@@ -1684,4 +1684,42 @@ img { max-width: 100%; display: block; }
 
 .summary-warning p {
   margin: 0;
+}
+/* Plate Status Badge (New Entry Lookup) */
+.plate-status-badge {
+  margin-top: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.status-badge-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+}
+
+.plate-status-badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.plate-status-badge.info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.status-badge-content strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.plate-status-badge.warning strong { color: var(--warning); }
+.plate-status-badge.info strong { color: var(--accent); }
+
+.status-badge-content p {
+  font-size: 11px;
+  opacity: 0.7;
+  line-height: 1.4;
 }

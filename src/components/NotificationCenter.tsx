@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bell, 
@@ -39,7 +40,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, onClose
     }
   };
 
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
+
+  const handleViewHistory = () => {
+    navigate(orgId ? '/dashboard/notifications' : '/super-admin/notifications');
+    onClose();
+  };
 
   return (
     <AnimatePresence>
@@ -102,7 +110,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, onClose
         </div>
 
         <div className="flyout-footer">
-          <button className="btn-full-text">View Notification History</button>
+          <button className="btn-full-text" onClick={handleViewHistory}>View Notification History</button>
         </div>
       </motion.div>
     </AnimatePresence>

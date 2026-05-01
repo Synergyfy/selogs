@@ -29,6 +29,11 @@ const SettingsPage: React.FC = () => {
   const [systemName, setSystemName] = useState('VGuard System');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [selectedMode, setSelectedMode] = useState<'hotel' | 'estate' | 'security'>('security');
+  
+  // System Configuration Toggles
+  const [requirePhone, setRequirePhone] = useState(true);
+  const [enableNotes, setEnableNotes] = useState(true);
+  const [ocrOptimization, setOcrOptimization] = useState(false);
 
   const handleSave = () => {
     setSaving(true);
@@ -233,27 +238,45 @@ const SettingsPage: React.FC = () => {
                   <h2>System Configuration</h2>
                   <p>Fine-tune how the capturing system behaves on mobile devices.</p>
                 </div>
-                <div className="settings-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-input)', borderRadius: '12px' }}>
-                    <div>
-                      <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Require Phone Number</h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Staff must enter a phone number for every entry.</p>
+                <div className="settings-list">
+                  <div className="setting-row">
+                    <div className="setting-info">
+                      <h4>Require Phone Number</h4>
+                      <p>Staff must enter a phone number for every entry.</p>
                     </div>
-                    <button className="theme-btn active" style={{ width: '60px' }}>ON</button>
+                    <button 
+                      className={`toggle-switch ${requirePhone ? 'active' : ''}`}
+                      onClick={() => setRequirePhone(!requirePhone)}
+                      aria-label="Toggle require phone number"
+                    >
+                      <span className="toggle-knob" />
+                    </button>
                   </div>
-                  <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-input)', borderRadius: '12px' }}>
-                    <div>
-                      <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Enable Entry Notes</h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Allow staff to add custom notes to vehicle logs.</p>
+                  <div className="setting-row">
+                    <div className="setting-info">
+                      <h4>Enable Entry Notes</h4>
+                      <p>Allow staff to add custom notes to vehicle logs.</p>
                     </div>
-                    <button className="theme-btn active" style={{ width: '60px' }}>ON</button>
+                    <button 
+                      className={`toggle-switch ${enableNotes ? 'active' : ''}`}
+                      onClick={() => setEnableNotes(!enableNotes)}
+                      aria-label="Toggle enable entry notes"
+                    >
+                      <span className="toggle-knob" />
+                    </button>
                   </div>
-                  <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-input)', borderRadius: '12px' }}>
-                    <div>
-                      <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>OCR Optimization</h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Enable high-accuracy mode for plate recognition (Uses more data).</p>
+                  <div className="setting-row">
+                    <div className="setting-info">
+                      <h4>OCR Optimization</h4>
+                      <p>Enable high-accuracy mode for plate recognition (Uses more data).</p>
                     </div>
-                    <button className="theme-btn" style={{ width: '60px' }}>OFF</button>
+                    <button 
+                      className={`toggle-switch ${ocrOptimization ? 'active' : ''}`}
+                      onClick={() => setOcrOptimization(!ocrOptimization)}
+                      aria-label="Toggle OCR optimization"
+                    >
+                      <span className="toggle-knob" />
+                    </button>
                   </div>
                 </div>
               </motion.div>
