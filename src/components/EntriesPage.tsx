@@ -33,6 +33,10 @@ const EntriesPage: React.FC = () => {
   const [dateFilter, setDateFilter] = useState('Today');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   // Mock data
   const [entries, setEntries] = useState<Entry[]>([
@@ -44,6 +48,10 @@ const EntriesPage: React.FC = () => {
     { id: '6', plate: 'ENU-987-DD', phone: '08167890123', timestamp: '2026-04-29 11:05 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-29 03:20 PM', duration: '4h 15m' },
     { id: '7', plate: 'BEN-159-EE', phone: '07078901234', timestamp: '2026-04-28 05:50 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-28 07:05 PM', duration: '1h 15m' },
     { id: '8', plate: 'KDY-753-FF', phone: '09089012345', timestamp: '2026-04-28 03:20 PM', staff: 'John Doe', device: 'Tab-02', status: 'OUT', checkOutTime: '2026-04-28 05:00 PM', duration: '1h 40m' },
+    { id: '9', plate: 'LND-246-GG', phone: '08011122233', timestamp: '2026-04-28 11:30 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'IN' },
+    { id: '10', plate: 'KWA-135-HH', phone: '07033344455', timestamp: '2026-04-27 04:45 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-27 06:00 PM', duration: '1h 15m' },
+    { id: '11', plate: 'OYO-864-II', phone: '09055566677', timestamp: '2026-04-27 02:20 PM', staff: 'John Doe', device: 'Tab-02', status: 'IN' },
+    { id: '12', plate: 'OGU-246-JJ', phone: '08077788899', timestamp: '2026-04-27 10:10 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-27 01:15 PM', duration: '3h 05m' },
   ]);
 
   const filteredEntries = useMemo(() => {
@@ -51,7 +59,6 @@ const EntriesPage: React.FC = () => {
       const matchesSearch = entry.plate.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStaff = staffFilter === 'All Staff' || entry.staff === staffFilter;
       
-      // Simple date filter logic for mock
       let matchesDate = true;
       if (dateFilter === 'Today') matchesDate = entry.timestamp.includes('2026-04-30');
       else if (dateFilter === 'Yesterday') matchesDate = entry.timestamp.includes('2026-04-29');
@@ -59,6 +66,19 @@ const EntriesPage: React.FC = () => {
       return matchesSearch && matchesStaff && matchesDate;
     });
   }, [searchQuery, staffFilter, dateFilter, entries]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
+  const paginatedEntries = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredEntries.slice(start, start + itemsPerPage);
+  }, [filteredEntries, currentPage, itemsPerPage]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   const handleDeleteClick = (id: string) => {
     setEntryToDelete(id);
@@ -75,7 +95,6 @@ const EntriesPage: React.FC = () => {
   const handleExport = () => {
     if (filteredEntries.length === 0) return;
 
-    // Create CSV content
     const headers = ['Plate Number', 'Phone Number', 'Check-In', 'Check-Out', 'Duration', 'Staff Member', 'Device', 'Status'];
     const csvContent = [
       headers.join(','),
@@ -91,7 +110,6 @@ const EntriesPage: React.FC = () => {
       ].join(','))
     ].join('\n');
 
-    // Create blob and download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -116,14 +134,20 @@ const EntriesPage: React.FC = () => {
             type="text" 
             placeholder="Search by plate number..." 
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset to page 1 on search
+            }}
           />
         </div>
 
         <div className="filters-group">
           <div className="filter-item">
             <Calendar className="filter-icon" size={16} />
-            <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
+            <select value={dateFilter} onChange={(e) => {
+              setDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}>
               <option value="Today">Today</option>
               <option value="Yesterday">Yesterday</option>
               <option value="All Time">All Time</option>
@@ -132,7 +156,10 @@ const EntriesPage: React.FC = () => {
 
           <div className="filter-item">
             <User className="filter-icon" size={16} />
-            <select value={staffFilter} onChange={(e) => setStaffFilter(e.target.value)}>
+            <select value={staffFilter} onChange={(e) => {
+              setStaffFilter(e.target.value);
+              setCurrentPage(1);
+            }}>
               <option value="All Staff">All Staff</option>
               <option value="Samuel Okon">Samuel Okon</option>
               <option value="John Doe">John Doe</option>
@@ -168,8 +195,8 @@ const EntriesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredEntries.length > 0 ? (
-                filteredEntries.map((entry) => (
+              {paginatedEntries.length > 0 ? (
+                paginatedEntries.map((entry) => (
                   <tr key={entry.id}>
                     <td className="plate-cell">{entry.plate}</td>
                     <td>{entry.phone || '—'}</td>
@@ -216,11 +243,35 @@ const EntriesPage: React.FC = () => {
         </div>
 
         <div className="table-pagination">
-          <p className="pagination-info">Showing 1 to {filteredEntries.length} of {filteredEntries.length} entries</p>
+          <p className="pagination-info">
+            Showing {filteredEntries.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredEntries.length)} of {filteredEntries.length} entries
+          </p>
           <div className="pagination-btns">
-            <button className="page-btn disabled"><ChevronLeft size={18} /></button>
-            <button className="page-btn active">1</button>
-            <button className="page-btn disabled"><ChevronRight size={18} /></button>
+            <button 
+              className={`page-btn ${currentPage === 1 ? 'disabled' : ''}`}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            
+            {[...Array(totalPages)].map((_, i) => (
+              <button 
+                key={i + 1}
+                className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                onClick={() => handlePageChange(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button 
+              className={`page-btn ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
       </motion.div>
@@ -238,3 +289,4 @@ const EntriesPage: React.FC = () => {
 };
 
 export default EntriesPage;
+

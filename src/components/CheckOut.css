@@ -1,0 +1,325 @@
+/* Check-Out Screen Styles */
+
+.checkout-screen {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-header {
+  padding: 20px;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.checkout-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.checkout-back-btn:hover {
+  background: var(--border-light);
+}
+
+.checkout-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.checkout-content {
+  flex: 1;
+  padding: 24px;
+}
+
+/* Search Section */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.checkout-search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkout-search-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.checkout-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.checkout-input-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--accent);
+}
+
+.checkout-input-wrapper input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-light);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.checkout-input-wrapper input:focus {
+  border-color: var(--accent);
+  background: var(--bg-input);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* Results List */
+.checkout-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.checkout-results-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.checkout-vehicle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+}
+
+.checkout-vehicle-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1);
+}
+
+.vehicle-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vehicle-card-plate {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.vehicle-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.vehicle-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.duration-tag {
+  padding: 4px 10px;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Details View */
+.checkout-details-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 32px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.checkout-details-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), #818cf8);
+}
+
+.details-hero {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.details-icon-box {
+  width: 72px;
+  height: 72px;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  transform: rotate(-10deg);
+}
+
+.details-hero h1 {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.details-hero p {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.details-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.details-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.details-info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.info-value.highlight {
+  color: var(--accent);
+}
+
+.checkout-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-checkout-confirm {
+  flex: 2;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+}
+
+.btn-checkout-confirm:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5);
+}
+
+.btn-checkout-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-checkout-confirm.success {
+  background: #10b981;
+  box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  opacity: 0.6;
+}
+
+.empty-state p {
+  margin-top: 16px;
+  font-weight: 600;
+}

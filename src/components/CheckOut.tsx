@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ArrowLeft, Clock, Car, LogOut, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, type VehicleEntry } from '../services/db';
+import './CheckOut.css';
 
 interface CheckOutProps {
   staffId?: string;
@@ -19,11 +20,10 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
 
   useEffect(() => {
     const loadActiveVehicles = async () => {
-      // Find all vehicles that are marked as 'IN'
-      // Note: We're filtering in memory for simplicity with Dexie if the index isn't fully ready yet, 
-      // but in production we'd use .where('status').equals('IN')
       const allEntries = await db.entries.toArray();
-      const active = allEntries.filter(e => !e.status || e.status === 'IN').sort((a, b) => b.timestamp - a.timestamp);
+      const active = allEntries
+        .filter(e => !e.status || e.status === 'IN')
+        .sort((a, b) => b.timestamp - a.timestamp);
       setActiveVehicles(active);
     };
     loadActiveVehicles();
@@ -57,7 +57,7 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
         checkOutTimestamp: now,
         checkOutStaffId: staffId,
         checkOutStaffName: staffName,
-        synced: false // Needs to be re-synced to update the server
+        synced: false 
       });
       
       setIsProcessing(false);
@@ -74,69 +74,73 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
   };
 
   return (
-    <div className="new-entry-screen">
-      <div className="ne-header">
-        <button className="ne-back-btn" onClick={onCancel}>
-          <ArrowLeft size={24} />
+    <div className="checkout-screen">
+      <div className="checkout-header">
+        <button className="checkout-back-btn" onClick={onCancel}>
+          <ArrowLeft size={20} />
         </button>
         <h2>Check-Out Vehicle</h2>
-        <div style={{ width: 24 }} />
+        <div style={{ width: 40 }} />
       </div>
 
-      <div className="ne-content" style={{ padding: '20px' }}>
+      <div className="checkout-content">
         <AnimatePresence mode="wait">
           {!selectedVehicle ? (
             <motion.div 
               key="search"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              className="search-container"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
             >
-              <div className="ne-input-group">
-                <label>Find Vehicle</label>
-                <div className="ne-input-wrapper">
-                  <Search className="ne-input-icon" size={20} />
+              <div className="checkout-search-group">
+                <label>Identify Vehicle</label>
+                <div className="checkout-input-wrapper">
+                  <Search className="checkout-input-icon" size={20} />
                   <input 
                     type="text" 
-                    placeholder="Search Plate Number..."
+                    placeholder="Enter Plate Number..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ textTransform: 'uppercase' }}
+                    autoFocus
                   />
                 </div>
               </div>
 
-              <div style={{ marginTop: '24px' }}>
-                <h3 style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '12px' }}>
-                  Vehicles Currently Inside ({activeVehicles.length})
-                </h3>
+              <div className="checkout-results">
+                <div className="checkout-results-header">
+                  <h3>Active Vehicles ({activeVehicles.length})</h3>
+                </div>
                 
                 {filteredVehicles.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>
-                    <Car size={32} style={{ margin: '0 auto 12px' }} />
-                    <p>No active vehicles found.</p>
+                  <div className="empty-state">
+                    <Car size={48} />
+                    <p>No active vehicles found{searchTerm ? ` for "${searchTerm.toUpperCase()}"` : ''}.</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {filteredVehicles.map(vehicle => (
-                      <div 
+                  <div className="checkout-list">
+                    {filteredVehicles.map((vehicle, idx) => (
+                      <motion.div 
                         key={vehicle.id} 
-                        className="home-recent-entry" 
-                        style={{ cursor: 'pointer', border: '1px solid var(--border-light)' }}
+                        className="checkout-vehicle-card" 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 }}
                         onClick={() => setSelectedVehicle(vehicle)}
                       >
-                        <div className="home-recent-entry-left">
-                          <div className="home-recent-plate">{vehicle.plateNumber}</div>
-                          <div className="home-recent-time">
-                            <Clock size={11} /> Check-In: {new Date(vehicle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <div className="vehicle-card-left">
+                          <div className="vehicle-card-plate">{vehicle.plateNumber}</div>
+                          <div className="vehicle-card-meta">
+                            <Clock size={12} /> {new Date(vehicle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent)' }}>
+                        <div className="vehicle-card-right">
+                          <span className="duration-tag">
                             {calculateDuration(vehicle.timestamp)}
                           </span>
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 )}
@@ -145,62 +149,60 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
           ) : (
             <motion.div 
               key="details"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              className="details-container"
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
             >
-              <div style={{ background: 'var(--surface)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border-light)', marginBottom: '24px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <Car size={32} />
+              <div className="checkout-details-card">
+                <div className="details-hero">
+                  <div className="details-icon-box">
+                    <Car size={36} />
                   </div>
-                  <h2 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '1px', marginBottom: '4px' }}>
-                    {selectedVehicle.plateNumber}
-                  </h2>
-                  <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Ready for Check-Out</p>
+                  <h1>{selectedVehicle.plateNumber}</h1>
+                  <p>Check-out Summary</p>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '16px' }}>
-                    <span style={{ color: 'var(--text-dim)' }}>Check-In Time</span>
-                    <span style={{ fontWeight: 600 }}>{new Date(selectedVehicle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <div className="details-info-list">
+                  <div className="details-info-item">
+                    <span className="info-label">Check-In Time</span>
+                    <span className="info-value">{new Date(selectedVehicle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '16px' }}>
-                    <span style={{ color: 'var(--text-dim)' }}>Time Spent</span>
-                    <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{calculateDuration(selectedVehicle.timestamp)}</span>
+                  <div className="details-info-item">
+                    <span className="info-label">Duration Stayed</span>
+                    <span className="info-value highlight">{calculateDuration(selectedVehicle.timestamp)}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-dim)' }}>Check-In Staff</span>
-                    <span style={{ fontWeight: 600 }}>{selectedVehicle.staffName || selectedVehicle.staffId}</span>
+                  <div className="details-info-item">
+                    <span className="info-label">Staff Member</span>
+                    <span className="info-value">{selectedVehicle.staffName || 'Security'}</span>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="checkout-actions">
                 <button 
-                  className="ne-save-btn" 
-                  style={{ background: 'var(--bg-input)', color: 'var(--text)', flex: 1 }}
+                  className="btn-secondary" 
                   onClick={() => setSelectedVehicle(null)}
+                  disabled={isProcessing || showSuccess}
                 >
-                  Back
+                  Change Vehicle
                 </button>
                 <button 
-                  className="ne-save-btn" 
+                  className={`btn-checkout-confirm ${showSuccess ? 'success' : ''}`} 
                   onClick={handleCheckOut}
                   disabled={isProcessing || showSuccess}
-                  style={{ flex: 2, background: showSuccess ? '#10b981' : undefined }}
                 >
                   {isProcessing ? (
-                    <div className="spinner-mini" style={{ margin: '0 auto' }} />
+                    <div className="spinner-mini" />
                   ) : showSuccess ? (
                     <>
-                      <CheckCircle2 size={20} />
-                      Success
+                      <CheckCircle2 size={24} />
+                      Completed
                     </>
                   ) : (
                     <>
-                      <LogOut size={20} />
-                      Confirm Check-Out
+                      <LogOut size={22} />
+                      Confirm Exit
                     </>
                   )}
                 </button>
@@ -214,3 +216,4 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
 };
 
 export default CheckOut;
+

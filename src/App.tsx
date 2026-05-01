@@ -355,6 +355,40 @@ function App() {
     setThemeMode(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
+  // Dynamic Contrast Handler
+  useEffect(() => {
+    const checkContrast = () => {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      if (!accent) return;
+
+      // Helper to parse hex to RGB
+      const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : null;
+      };
+
+      const rgb = hexToRgb(accent);
+      if (rgb) {
+        // Calculate YIQ brightness
+        const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
+        const contrastColor = yiq >= 128 ? '#0f172a' : '#ffffff';
+        document.documentElement.style.setProperty('--on-accent', contrastColor);
+      }
+    };
+
+    checkContrast();
+    
+    // Watch for style changes (if user updates brand color)
+    const observer = new MutationObserver(checkContrast);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    
+    return () => observer.disconnect();
+  }, [effectiveTheme]);
+
   return (
     <>
       <Routes>
