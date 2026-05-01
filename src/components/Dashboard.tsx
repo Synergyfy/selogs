@@ -10,25 +10,36 @@ import {
   ArrowUpRight,
   Clock
 } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../services/db';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  
-  // Mock data
-  const stats = [
-    { title: "Today's Entries", value: "48", change: "+12%", icon: <Car size={24} />, color: "indigo" },
-    { title: "Weekly Total", value: "312", change: "+8%", icon: <Calendar size={24} />, color: "emerald" },
-    { title: "Active Staff", value: "6", change: "Full", icon: <Users size={24} />, color: "blue" },
-    { title: "Linked Devices", value: "4", change: "Online", icon: <Smartphone size={24} />, color: "amber" },
-  ];
 
-  const recentEntries = [
-    { id: 1, plate: "ABC-123-XY", time: "2 mins ago", staff: "Samuel Okon", status: "Synced" },
-    { id: 2, plate: "LAG-456-ZZ", time: "15 mins ago", staff: "Samuel Okon", status: "Synced" },
-    { id: 3, plate: "KND-789-AA", time: "45 mins ago", staff: "John Doe", status: "Synced" },
-    { id: 4, plate: "PHC-321-BB", time: "1 hour ago", staff: "Mary Jane", status: "Synced" },
-    { id: 5, plate: "ABJ-654-CC", time: "2 hours ago", staff: "John Doe", status: "Synced" },
+  // Live Queries
+  const todayCount = useLiveQuery(() => {
+    const startOfDay = new Date().setHours(0, 0, 0, 0);
+    return db.entries.where('timestamp').above(startOfDay).count();
+  }) || 0;
+
+  const weeklyCount = useLiveQuery(() => {
+    const startOfWeek = new Date().setDate(new Date().getDate() - 7);
+    return db.entries.where('timestamp').above(startOfWeek).count();
+  }) || 0;
+
+  const activeStaff = useLiveQuery(() => db.staff.where('status').equals('active').count()) || 0;
+  const deviceCount = useLiveQuery(() => db.branches.count()) || 0; // Temporary fallback
+
+  const liveEntries = useLiveQuery(() => 
+    db.entries.orderBy('timestamp').reverse().limit(5).toArray()
+  ) || [];
+
+  const stats = [
+    { title: "Today's Entries", value: todayCount.toString(), change: "+12%", icon: <Car size={24} />, color: "indigo" },
+    { title: "Weekly Total", value: weeklyCount.toString(), change: "+8%", icon: <Calendar size={24} />, color: "emerald" },
+    { title: "Active Staff", value: activeStaff.toString(), change: "Live", icon: <Users size={24} />, color: "blue" },
+    { title: "System Nodes", value: deviceCount.toString(), change: "Online", icon: <Smartphone size={24} />, color: "amber" },
   ];
 
   return (
@@ -84,23 +95,30 @@ const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {recentEntries.map((entry) => (
+                {liveEntries.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="font-bold">{entry.plate}</td>
+                    <td className="font-bold">{entry.plateNumber}</td>
                     <td className="text-muted">
                       <div className="flex-center gap-4">
                         <Clock size={14} />
-                        {entry.time}
+                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </td>
-                    <td>{entry.staff}</td>
+                    <td>{entry.staffName || 'System'}</td>
                     <td>
-                      <span className="status-badge synced">
-                        {entry.status}
+                      <span className={`status-badge ${entry.synced ? 'synced' : 'pending'}`}>
+                        {entry.synced ? 'Synced' : 'Local'}
                       </span>
                     </td>
                   </tr>
                 ))}
+                {liveEntries.length === 0 && (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+                      No recent activity recorded today.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

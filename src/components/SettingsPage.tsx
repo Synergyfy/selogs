@@ -11,11 +11,12 @@ import {
   Home, 
   ShieldCheck,
   Save,
-  Globe
+  Globe,
+  Settings
 } from 'lucide-react';
 import './SettingsPage.css';
 
-type Tab = 'general' | 'branding' | 'mode';
+type Tab = 'general' | 'branding' | 'mode' | 'system';
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -42,6 +43,7 @@ const SettingsPage: React.FC = () => {
     { id: 'general', label: 'General', icon: <Building2 size={18} /> },
     { id: 'branding', label: 'Branding', icon: <Palette size={18} /> },
     { id: 'mode', label: 'System Mode', icon: <Shield size={18} /> },
+    { id: 'system', label: 'System Settings', icon: <Settings size={18} /> },
   ];
 
   return (
@@ -216,6 +218,43 @@ const SettingsPage: React.FC = () => {
                       {selectedMode === mode.id && <Check className="check-icon-mini" size={20} />}
                     </div>
                   ))}
+                </div>
+              </motion.div>
+            )}
+            {activeTab === 'system' && (
+              <motion.div 
+                key="system"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="settings-section"
+              >
+                <div className="section-header">
+                  <h2>System Configuration</h2>
+                  <p>Fine-tune how the capturing system behaves on mobile devices.</p>
+                </div>
+                <div className="settings-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-input)', borderRadius: '12px' }}>
+                    <div>
+                      <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Require Phone Number</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Staff must enter a phone number for every entry.</p>
+                    </div>
+                    <button className="theme-btn active" style={{ width: '60px' }}>ON</button>
+                  </div>
+                  <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-input)', borderRadius: '12px' }}>
+                    <div>
+                      <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>Enable Entry Notes</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Allow staff to add custom notes to vehicle logs.</p>
+                    </div>
+                    <button className="theme-btn active" style={{ width: '60px' }}>ON</button>
+                  </div>
+                  <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-input)', borderRadius: '12px' }}>
+                    <div>
+                      <h4 style={{ fontWeight: 700, marginBottom: '4px' }}>OCR Optimization</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Enable high-accuracy mode for plate recognition (Uses more data).</p>
+                    </div>
+                    <button className="theme-btn" style={{ width: '60px' }}>OFF</button>
+                  </div>
                 </div>
               </motion.div>
             )}

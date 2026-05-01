@@ -12,8 +12,14 @@ import {
   X,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  Building2,
+  CreditCard,
+  Bell
 } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../services/db';
+import NotificationCenter from './NotificationCenter';
 import type { ThemeMode } from '../types';
 import './DashboardLayout.css';
 
@@ -27,14 +33,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  const unreadCount = useLiveQuery(() => 
+    db.notifications.where('read').equals(0).count()
+  ) || 0;
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const navItems = [
     { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Overview' },
     { path: '/dashboard/entries', icon: <List size={20} />, label: 'Vehicle Entries' },
-    { path: '/dashboard/staff', icon: <Users size={20} />, label: 'Staff Management' },
-    { path: '/dashboard/devices', icon: <Smartphone size={20} />, label: 'Linked Devices' },
+    { path: '/dashboard/branches', icon: <Building2 size={20} />, label: 'Branches' },
+    { path: '/dashboard/staff', icon: <Users size={20} />, label: 'Staff' },
+    { path: '/dashboard/devices', icon: <Smartphone size={20} />, label: 'Devices' },
+    { path: '/dashboard/subscription', icon: <Zap size={20} />, label: 'Subscription' },
+    { path: '/dashboard/billing', icon: <CreditCard size={20} />, label: 'Billing' },
     { path: '/dashboard/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 
@@ -120,6 +134,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
               >
                 <Monitor size={18} />
               </button>
+            </div>
+
+            <div className="notification-wrapper">
+              <button className="header-action-btn" onClick={() => setIsNotifOpen(!isNotifOpen)}>
+                <Bell size={20} />
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+              </button>
+              <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
             </div>
             
             <div className="user-profile">

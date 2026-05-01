@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Smartphone, Download, Key, Copy, Check, ArrowRight, ArrowLeft, ShieldCheck, ExternalLink } from 'lucide-react';
-import './DeviceSetup.css';
+import { Smartphone, Download, Key, Copy, Check, ArrowRight, ArrowLeft, ShieldCheck, ExternalLink, QrCode } from 'lucide-react';
+import './AuthLayout.css';
 
 const DeviceSetup: React.FC = () => {
   const navigate = useNavigate();
@@ -15,104 +15,105 @@ const DeviceSetup: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleFinish = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <div className="auth-page">
-      <div className="bg-glow top-left-glow" />
-      <div className="bg-glow bottom-right-glow" />
+      <div className="auth-glow auth-glow-1" />
+      <div className="auth-glow auth-glow-2" />
 
-      <div className="auth-container">
-        <div className="auth-brand" onClick={() => navigate('/')}>
-          <div className="auth-logo">
-            <ShieldCheck className="icon-white" />
-          </div>
-          <span className="auth-title">VGuard</span>
+      {/* Visual Side */}
+      <div className="auth-visual-side">
+        <div className="auth-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <ShieldCheck className="icon-md" style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: '24px', fontWeight: 800, color: 'white', marginLeft: '12px' }}>VGuard</span>
         </div>
 
-        <motion.div 
-          className="auth-card setup-card-container"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <button 
-            type="button" 
-            className="back-btn" 
-            onClick={() => navigate(-1)}
-            title="Go Back"
+        <div className="visual-content">
+          <motion.h2
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            <ArrowLeft className="icon-sm" />
-          </button>
-
-          <div className="auth-header">
-            <h2>Device Setup</h2>
-            <p>Link your security devices to the organization.</p>
+            Deploy your <br /> <span className="text-gradient">Gate Terminals.</span>
+          </motion.h2>
+          <p>Link any mobile device or tablet to your organization using your unique secure code.</p>
+          
+          <div className="qr-preview-box-premium" style={{ marginTop: '40px' }}>
+            <QrCode size={120} style={{ opacity: 0.8 }} />
+            <span>Scan to Install PWA</span>
           </div>
+        </div>
 
-          <div className="code-section">
-            <label>Your Organization Code</label>
-            <div className="org-code-box">
-              <span className="org-code">{orgCode}</span>
-              <button 
-                className={`copy-btn ${copied ? 'copied' : ''}`}
-                onClick={handleCopy}
-                title="Copy code"
-              >
-                {copied ? <Check className="icon-xs" /> : <Copy className="icon-xs" />}
+        <div className="visual-stats">
+          <div className="v-stat">
+            <h4>PWA</h4>
+            <span>Cross-Platform Ready</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Form Side */}
+      <div className="auth-form-side">
+        <div className="auth-container-premium">
+          <motion.div 
+            className="auth-card-premium"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <button className="back-btn-minimal" onClick={() => navigate(-1)}>
+              <ArrowLeft size={18} /> Previous Step
+            </button>
+
+            <div className="auth-header">
+              <h2>Device Connectivity</h2>
+              <p>Connect your devices to start capturing vehicles.</p>
+            </div>
+
+            <div className="org-code-card-premium">
+              <label>Unique Organization Code</label>
+              <div className="code-display-premium">
+                <strong>{orgCode}</strong>
+                <button onClick={handleCopy} className={`copy-btn-premium ${copied ? 'success' : ''}`}>
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="setup-instruction-stack">
+              <div className="instr-item">
+                <div className="instr-num">1</div>
+                <div className="instr-text">
+                  <strong>Open VGuard on Mobile</strong>
+                  <span>Visit this URL on your tablet or smartphone device.</span>
+                </div>
+              </div>
+              <div className="instr-item">
+                <div className="instr-num">2</div>
+                <div className="instr-text">
+                  <strong>Add to Home Screen</strong>
+                  <span>Install the PWA for offline-first capabilities.</span>
+                </div>
+              </div>
+              <div className="instr-item">
+                <div className="instr-num">3</div>
+                <div className="instr-text">
+                  <strong>Enter Code</strong>
+                  <span>Use the code above to link the device to your team.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="setup-actions-premium">
+              <button onClick={() => navigate('/dashboard')} className="btn-auth-submit">
+                Launch Admin Dashboard
+                <ArrowRight size={18} />
+              </button>
+              <button onClick={() => window.open('/app', '_blank')} className="btn-auth-link">
+                <ExternalLink size={14} />
+                Preview Mobile App
               </button>
             </div>
-            <p className="code-hint">Share this code with your security team to link their mobile apps.</p>
-          </div>
-
-          <div className="setup-steps">
-            <div className="setup-step">
-              <div className="step-number">1</div>
-              <div className="step-icon-wrapper">
-                <Smartphone className="step-icon" />
-              </div>
-              <div className="step-content">
-                <h4>Install Mobile App</h4>
-                <p>Open this site on your security device and tap 'Add to Home Screen'.</p>
-              </div>
-            </div>
-
-            <div className="setup-step">
-              <div className="step-number">2</div>
-              <div className="step-icon-wrapper">
-                <Download className="step-icon" />
-              </div>
-              <div className="step-content">
-                <h4>Open VGuard App</h4>
-                <p>Launch the app from the home screen on your tablet or smartphone.</p>
-              </div>
-            </div>
-
-            <div className="setup-step">
-              <div className="step-number">3</div>
-              <div className="step-icon-wrapper">
-                <Key className="step-icon" />
-              </div>
-              <div className="step-content">
-                <h4>Link Organization</h4>
-                <p>Enter your unique code <strong>{orgCode}</strong> to start logging vehicles.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="setup-actions">
-            <button onClick={handleFinish} className="btn-submit w-full">
-              Finish Setup & Go to Dashboard
-              <ArrowRight className="icon-sm" />
-            </button>
-            <button className="btn-text mt-12 w-full" onClick={() => window.open('/app', '_blank')}>
-              Open Mobile App Preview
-              <ExternalLink className="icon-xs" />
-            </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -23,7 +23,9 @@ interface Entry {
   timestamp: string;
   staff: string;
   device: string;
-  status: 'Synced' | 'Pending';
+  status: 'IN' | 'OUT';
+  checkOutTime?: string;
+  duration?: string;
 }
 
 const EntriesPage: React.FC = () => {
@@ -35,14 +37,14 @@ const EntriesPage: React.FC = () => {
 
   // Mock data
   const [entries, setEntries] = useState<Entry[]>([
-    { id: '1', plate: 'ABC-123-XY', phone: '08012345678', timestamp: '2026-04-30 11:20 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'Synced' },
-    { id: '2', plate: 'LAG-456-ZZ', phone: '08123456789', timestamp: '2026-04-30 10:45 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'Synced' },
-    { id: '3', plate: 'KND-789-AA', phone: '07034567890', timestamp: '2026-04-30 09:15 AM', staff: 'John Doe', device: 'Tab-02', status: 'Synced' },
-    { id: '4', plate: 'PHC-321-BB', phone: '09045678901', timestamp: '2026-04-29 04:30 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'Synced' },
-    { id: '5', plate: 'ABJ-654-CC', phone: '08056789012', timestamp: '2026-04-29 02:10 PM', staff: 'John Doe', device: 'Tab-02', status: 'Synced' },
-    { id: '6', plate: 'ENU-987-DD', phone: '08167890123', timestamp: '2026-04-29 11:05 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'Synced' },
-    { id: '7', plate: 'BEN-159-EE', phone: '07078901234', timestamp: '2026-04-28 05:50 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'Synced' },
-    { id: '8', plate: 'KDY-753-FF', phone: '09089012345', timestamp: '2026-04-28 03:20 PM', staff: 'John Doe', device: 'Tab-02', status: 'Synced' },
+    { id: '1', plate: 'ABC-123-XY', phone: '08012345678', timestamp: '2026-04-30 11:20 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-30 01:45 PM', duration: '2h 25m' },
+    { id: '2', plate: 'LAG-456-ZZ', phone: '08123456789', timestamp: '2026-04-30 10:45 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'IN' },
+    { id: '3', plate: 'KND-789-AA', phone: '07034567890', timestamp: '2026-04-30 09:15 AM', staff: 'John Doe', device: 'Tab-02', status: 'OUT', checkOutTime: '2026-04-30 12:30 PM', duration: '3h 15m' },
+    { id: '4', plate: 'PHC-321-BB', phone: '09045678901', timestamp: '2026-04-29 04:30 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-29 06:10 PM', duration: '1h 40m' },
+    { id: '5', plate: 'ABJ-654-CC', phone: '08056789012', timestamp: '2026-04-29 02:10 PM', staff: 'John Doe', device: 'Tab-02', status: 'IN' },
+    { id: '6', plate: 'ENU-987-DD', phone: '08167890123', timestamp: '2026-04-29 11:05 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-29 03:20 PM', duration: '4h 15m' },
+    { id: '7', plate: 'BEN-159-EE', phone: '07078901234', timestamp: '2026-04-28 05:50 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-28 07:05 PM', duration: '1h 15m' },
+    { id: '8', plate: 'KDY-753-FF', phone: '09089012345', timestamp: '2026-04-28 03:20 PM', staff: 'John Doe', device: 'Tab-02', status: 'OUT', checkOutTime: '2026-04-28 05:00 PM', duration: '1h 40m' },
   ]);
 
   const filteredEntries = useMemo(() => {
@@ -75,13 +77,15 @@ const EntriesPage: React.FC = () => {
     if (filteredEntries.length === 0) return;
 
     // Create CSV content
-    const headers = ['Plate Number', 'Phone Number', 'Logged At', 'Staff Member', 'Device', 'Status'];
+    const headers = ['Plate Number', 'Phone Number', 'Check-In', 'Check-Out', 'Duration', 'Staff Member', 'Device', 'Status'];
     const csvContent = [
       headers.join(','),
       ...filteredEntries.map(entry => [
         `"${entry.plate}"`,
         `"${entry.phone || ''}"`,
         `"${entry.timestamp}"`,
+        `"${entry.checkOutTime || '—'}"`,
+        `"${entry.duration || 'Active'}"`,
         `"${entry.staff}"`,
         `"${entry.device}"`,
         `"${entry.status}"`
@@ -156,9 +160,10 @@ const EntriesPage: React.FC = () => {
               <tr>
                 <th>Plate Number</th>
                 <th>Phone Number</th>
-                <th>Logged At</th>
-                <th>Staff Member</th>
-                <th>Device</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+                <th>Duration</th>
+                <th>Staff</th>
                 <th>Status</th>
                 <th></th>
               </tr>
@@ -170,6 +175,14 @@ const EntriesPage: React.FC = () => {
                     <td className="plate-cell">{entry.plate}</td>
                     <td>{entry.phone || '—'}</td>
                     <td>{entry.timestamp}</td>
+                    <td>{entry.checkOutTime || '—'}</td>
+                    <td>
+                      {entry.duration ? (
+                        <span style={{ fontWeight: 600 }}>{entry.duration}</span>
+                      ) : (
+                        <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '12px' }}>Active</span>
+                      )}
+                    </td>
                     <td>
                       <div className="staff-cell">
                         <div className="staff-avatar-mini">{entry.staff.charAt(0)}</div>
@@ -177,14 +190,8 @@ const EntriesPage: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <div className="device-cell">
-                        <Smartphone size={14} />
-                        {entry.device}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${entry.status.toLowerCase()}`}>
-                        {entry.status}
+                      <span className={`status-badge ${entry.status === 'IN' ? 'active' : 'synced'}`}>
+                        {entry.status === 'IN' ? '● IN' : '○ OUT'}
                       </span>
                     </td>
                     <td>
@@ -200,7 +207,7 @@ const EntriesPage: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="no-data">
+                  <td colSpan={8} className="no-data">
                     No entries found matching your criteria.
                   </td>
                 </tr>

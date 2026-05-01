@@ -1,186 +1,150 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
-import './CreateAccount.css';
+import { User, Mail, Phone, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import './AuthLayout.css';
 
 const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
-  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    // Clear error when user types
-    if (error) setError('');
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    // Simulate successful validation and creation
-    // In a real app, API call goes here
     navigate('/verify-account');
   };
 
   return (
     <div className="auth-page">
-      {/* Background Gradients */}
-      <div className="bg-glow top-left-glow" />
-      <div className="bg-glow bottom-right-glow" />
+      <div className="auth-glow auth-glow-1" />
+      <div className="auth-glow auth-glow-2" />
 
-      <div className="auth-container">
-        
-        {/* Brand Header */}
-        <div className="auth-brand" onClick={() => navigate('/')}>
-          <div className="auth-logo">
-            <ShieldCheck className="icon-white" />
-          </div>
-          <span className="auth-title">VGuard</span>
+      {/* Visual Side */}
+      <div className="auth-visual-side">
+        <div className="auth-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <ShieldCheck className="icon-md" style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: '24px', fontWeight: 800, color: 'white', marginLeft: '12px' }}>VGuard</span>
         </div>
 
-        <motion.div 
-          className="auth-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <button 
-            type="button" 
-            className="back-btn" 
-            onClick={() => navigate(-1)}
-            title="Go Back"
+        <div className="visual-content">
+          <motion.h2
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            <ArrowLeft className="icon-sm" />
-          </button>
-
-          <div className="auth-header">
-            <h2>Create an account</h2>
-            <p>Start modernizing your security operations today.</p>
+            Security is a <br /> <span className="text-gradient">Data Game.</span>
+          </motion.h2>
+          <p>Join the elite organizations worldwide who have traded paper logs for automated vehicle intelligence.</p>
+          
+          <div className="feature-list-minimal" style={{ marginTop: '40px' }}>
+            <div className="f-item-min"><CheckCircle2 className="icon-xs" style={{ color: 'var(--accent)' }} /> <span>14-Day Free Trial</span></div>
+            <div className="f-item-min"><CheckCircle2 className="icon-xs" style={{ color: 'var(--accent)' }} /> <span>Unlimited Devices</span></div>
+            <div className="f-item-min"><CheckCircle2 className="icon-xs" style={{ color: 'var(--accent)' }} /> <span>Cancel Anytime</span></div>
           </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-group">
-              <label htmlFor="fullName">Full Name</label>
-              <div className="input-wrapper">
-                <User className="input-icon" />
-                <input 
-                  type="text" 
-                  id="fullName" 
-                  name="fullName" 
-                  placeholder="John Doe" 
-                  required 
-                  value={formData.fullName}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+        <div className="visual-stats">
+          <div className="v-stat">
+            <h4>500+</h4>
+            <span>Global Partners</span>
+          </div>
+          <div className="v-stat">
+            <h4>24/7</h4>
+            <span>Priority Support</span>
+          </div>
+        </div>
+      </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <div className="input-wrapper">
-                <Mail className="input-icon" />
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
-                  placeholder="name@company.com" 
-                  required 
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="phone">Phone Number</label>
-              <div className="input-wrapper">
-                <Phone className="input-icon" />
-                <input 
-                  type="tel" 
-                  id="phone" 
-                  name="phone" 
-                  placeholder="+1 (555) 000-0000" 
-                  required 
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" />
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  id="password" 
-                  name="password" 
-                  placeholder="Create a strong password" 
-                  required 
-                  minLength={8}
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <button 
-                  type="button" 
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" />
-                <input 
-                  type={showConfirmPassword ? "text" : "password"} 
-                  id="confirmPassword" 
-                  name="confirmPassword" 
-                  placeholder="Confirm your password" 
-                  required 
-                  minLength={8}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-                <button 
-                  type="button" 
-                  className="password-toggle"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
-                </button>
-              </div>
-              {error && <span className="error-text">{error}</span>}
-            </div>
-
-            <button type="submit" className="btn-submit">
-              Create Account
-              <ArrowRight className="icon-sm" />
+      {/* Form Side */}
+      <div className="auth-form-side">
+        <div className="auth-container-premium">
+          <motion.div 
+            className="auth-card-premium"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <button className="back-btn-minimal" onClick={() => navigate('/')}>
+              <ArrowLeft size={18} /> Back to home
             </button>
-          </form>
 
-          <div className="auth-footer">
-            <p>Already have an account? <button onClick={() => navigate('/login')} className="link-btn">Log in</button></p>
-          </div>
-        </motion.div>
+            <div className="auth-header">
+              <h2>Create Account</h2>
+              <p>Sign up to start your 14-day free trial.</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="input-group-premium">
+                <label>Full Name</label>
+                <div className="input-field-wrapper">
+                  <User className="input-icon" />
+                  <input 
+                    type="text" 
+                    name="fullName" 
+                    placeholder="John Doe" 
+                    required 
+                    value={formData.fullName}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group-premium">
+                <label>Email Address</label>
+                <div className="input-field-wrapper">
+                  <Mail className="input-icon" />
+                  <input 
+                    type="email" 
+                    name="email" 
+                    placeholder="name@company.com" 
+                    required 
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group-premium">
+                <label>Password</label>
+                <div className="input-field-wrapper">
+                  <Lock className="input-icon" />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    name="password" 
+                    placeholder="Min. 8 characters" 
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <button 
+                    type="button" 
+                    className="eye-btn" 
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" className="btn-auth-submit">
+                Create Account
+                <ArrowRight size={18} />
+              </button>
+            </form>
+
+            <div className="auth-footer">
+              <p>Already have an account? <button onClick={() => navigate('/login')} className="link-btn">Log in</button></p>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
