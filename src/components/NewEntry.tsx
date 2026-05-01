@@ -1,8 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
-import { Camera, X, Check, Loader2, Edit3, Phone, RotateCcw, StickyNote, AlertCircle } from 'lucide-react';
+import { Camera, X, Check, Loader2, Edit3, Phone, RotateCcw, StickyNote, AlertCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { performOCR } from '../services/ocr';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../services/db';
 
 interface NewEntryProps {
   onSave: (data: { plateNumber: string; phoneNumber?: string; notes?: string; image?: Blob }) => void;
@@ -21,6 +23,19 @@ const NewEntry: React.FC<NewEntryProps> = ({ onSave, onCancel }) => {
   const [ocrSource, setOcrSource] = useState<'Cloud' | 'Local' | null>(null);
   const [showNotes, setShowNotes] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+
+  // Lookup existing record for the plate
+  const lastEntry = useLiveQuery(
+    async () => {
+      if (plateNumber.length < 3) return null;
+      return await db.entries
+        .where('plateNumber')
+        .equals(plateNumber.trim().toUpperCase())
+        .reverse()
+        .sortBy('timestamp');
+    },
+    [plateNumber]
+  )?.[0];
 
   const capture = useCallback(async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -195,6 +210,35 @@ const NewEntry: React.FC<NewEntryProps> = ({ onSave, onCancel }) => {
                   disabled={isProcessing}
                   autoFocus={!isProcessing}
                 />
+
+                {/* Plate Verification Badge */}
+                {lastEntry && !isProcessing && (
+                  <motion.div 
+                    className={`plate-status-badge ${lastEntry.status === 'IN' ? 'warning' : 'info'}`}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                  >
+                    <div className="status-badge-content">
+                      {lastEntry.status === 'IN' ? (
+                        <>
+                          <AlertCircle size={14} className="text-warning" />
+                          <div>
+                            <strong>Already Checked In</strong>
+                            <p>Logged {new Date(lastEntry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} by {lastEntry.staffName || 'Staff'}</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Clock size={14} className="text-blue" />
+                          <div>
+                            <strong>Last Seen</strong>
+                            <p>Exited at {new Date(lastEntry.checkOutTimestamp || lastEntry.timestamp).toLocaleDateString()} {new Date(lastEntry.checkOutTimestamp || lastEntry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
               <div className="form-group">

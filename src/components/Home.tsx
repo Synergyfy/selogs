@@ -86,13 +86,13 @@ const Home: React.FC<HomeProps> = ({
         </motion.div>
         
         <motion.div whileTap={{ scale: 0.98 }}>
-          <button onClick={onCheckOut} className="home-cta-btn" style={{ padding: '16px 12px', background: 'var(--surface)', border: '1px solid var(--border-light)' }}>
-            <div className="home-cta-icon" style={{ marginBottom: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+          <button onClick={onCheckOut} className="home-cta-btn" style={{ padding: '16px 12px', background: 'var(--bg-card)', border: '1px solid var(--border-light)' }}>
+            <div className="home-cta-icon" style={{ marginBottom: '8px', background: 'var(--danger-subtle)', color: 'var(--danger)' }}>
               <LogOut size={24} strokeWidth={2.5} />
             </div>
             <div className="home-cta-content" style={{ textAlign: 'center' }}>
-              <span className="home-cta-text" style={{ fontSize: '14px', color: 'var(--text)' }}>Check-Out</span>
-              <span className="home-cta-sub" style={{ fontSize: '11px' }}>Exit Vehicle</span>
+              <span className="home-cta-text" style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Check-Out</span>
+              <span className="home-cta-sub" style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Exit Vehicle</span>
             </div>
           </button>
         </motion.div>

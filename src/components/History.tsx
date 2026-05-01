@@ -7,23 +7,18 @@ interface HistoryProps {
   onBack: () => void;
 }
 
+import { useLiveQuery } from 'dexie-react-hooks';
+
 const History: React.FC<HistoryProps> = ({ onBack }) => {
-  const [entries, setEntries] = useState<VehicleEntry[]>([]);
+  const entries = useLiveQuery(() => 
+    db.entries.orderBy('timestamp').reverse().toArray()
+  ) || [];
+
   const [filteredEntries, setFilteredEntries] = useState<VehicleEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(false); 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'synced' | 'unsynced'>('all');
   const [showSearch, setShowSearch] = useState(false);
-
-  useEffect(() => {
-    const fetchEntries = async () => {
-      const allEntries = await db.entries.orderBy('timestamp').reverse().toArray();
-      setEntries(allEntries);
-      setFilteredEntries(allEntries);
-      setLoading(false);
-    };
-    fetchEntries();
-  }, []);
 
   // Apply search and filter
   useEffect(() => {

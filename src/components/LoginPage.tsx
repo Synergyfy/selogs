@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, ArrowLeft, Crown, Smartphone } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './AuthLayout.css';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { loginAsDemo } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -13,13 +15,19 @@ const LoginPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+    // Simulate real login
+    await loginAsDemo('admin');
+    setLoading(false);
+    navigate('/dashboard');
+  };
+
+  const handleDemoLogin = async (target: '/dashboard' | '/super-admin') => {
+    const role = target === '/super-admin' ? 'admin' : 'admin'; // Both demo as admin for now
+    await loginAsDemo(role);
+    navigate(target);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +140,7 @@ const LoginPage: React.FC = () => {
                 <span style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700, display: 'block', marginBottom: '16px', textAlign: 'center' }}>⚡ Demo Quick Access</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                    <button 
-                    onClick={() => navigate('/dashboard')} 
+                    onClick={() => handleDemoLogin('/dashboard')} 
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
                    >
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -145,7 +153,7 @@ const LoginPage: React.FC = () => {
                    </button>
 
                    <button 
-                    onClick={() => navigate('/super-admin')} 
+                    onClick={() => handleDemoLogin('/super-admin')} 
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.08)', border: '1px solid rgba(251, 191, 36, 0.2)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
                    >
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(251, 191, 36, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

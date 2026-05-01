@@ -16,10 +16,15 @@ import {
   Building2,
   CreditCard,
   Bell,
-  Zap
+  Zap,
+  Search,
+  User,
+  ChevronDown
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
+import { useAuth } from '../context/AuthContext';
 import NotificationCenter from './NotificationCenter';
 import type { ThemeMode } from '../types';
 import './DashboardLayout.css';
@@ -32,9 +37,11 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, setThemeMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const unreadCount = useLiveQuery(() => 
     db.notifications.where('read').equals(0).count()
@@ -54,7 +61,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
   ];
 
   const handleLogout = () => {
-    // In a real app, clear auth here
+    logout();
     navigate('/');
   };
 
@@ -107,9 +114,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
             <button className="sidebar-toggle" onClick={toggleSidebar}>
               <Menu size={24} />
             </button>
-            <h1 className="page-title">
+            <h1 className="page-title hide-mobile">
               {navItems.find(item => item.path === location.pathname)?.label || 'Dashboard'}
             </h1>
+          </div>
+
+          <div className="header-center hide-mobile">
+            <div className="search-bar-wrapper">
+              <Search size={18} className="search-icon" />
+              <input type="text" placeholder="Search branches, staff, or entries..." className="search-input" />
+              <div className="search-shortcut">
+                <span style={{ fontSize: '12px' }}>⌘</span>
+                <span>K</span>
+              </div>
+            </div>
           </div>
 
           <div className="header-right">
@@ -145,12 +163,45 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
               <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
             </div>
             
-            <div className="user-profile">
-              <div className="user-avatar">AD</div>
-              <div className="user-info">
-                <span className="user-name">Admin User</span>
-                <span className="user-role">Administrator</span>
-              </div>
+            <div className="user-profile-wrapper">
+              <button className="user-profile" onClick={() => setIsProfileOpen(!isProfileOpen)}>
+                <div className="user-avatar">{user?.name?.substring(0, 2).toUpperCase() || 'AD'}</div>
+                <div className="user-info hide-mobile">
+                  <span className="user-name">{user?.name || 'Admin User'}</span>
+                  <span className="user-role">{user?.role === 'admin' ? 'Organization Admin' : 'Staff Member'}</span>
+                </div>
+                <ChevronDown size={16} className={`dropdown-arrow ${isProfileOpen ? 'open' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <motion.div 
+                    className="profile-dropdown"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  >
+                    <div className="dropdown-header">
+                      <span className="dropdown-label">Settings & Profile</span>
+                    </div>
+                    <div className="dropdown-content">
+                      <button className="dropdown-item" onClick={() => { navigate('/dashboard/settings'); setIsProfileOpen(false); }}>
+                        <User size={18} />
+                        <span>My Profile</span>
+                      </button>
+                      <button className="dropdown-item" onClick={() => { navigate('/dashboard/subscription'); setIsProfileOpen(false); }}>
+                        <CreditCard size={18} />
+                        <span>Subscription</span>
+                      </button>
+                      <div className="dropdown-divider" />
+                      <button className="dropdown-item logout" onClick={handleLogout}>
+                        <LogOut size={18} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
