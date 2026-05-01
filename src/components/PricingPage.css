@@ -55,7 +55,7 @@
 
 .cycle-btn.active {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
@@ -129,7 +129,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   padding: 6px 16px;
   border-radius: 9999px;
   font-size: 12px;
@@ -225,7 +225,7 @@
   width: 100%;
   padding: 16px;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border: none;
   border-radius: 16px;
   font-weight: 700;

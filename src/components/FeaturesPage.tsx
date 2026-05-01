@@ -1,9 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Smartphone, WifiOff, Users, MapPin, LayoutDashboard, Database, 
-  Search, Download, Bell, Shield, Smartphone as PhoneIcon, Zap,
-  ChevronRight, Check
+  WifiOff, Users, MapPin, Zap, Check
 } from 'lucide-react';
 import PublicHeader from './PublicHeader';
 import PublicFooter from './PublicFooter';
@@ -16,6 +15,7 @@ interface FeaturesPageProps {
 }
 
 const FeaturesPage: React.FC<FeaturesPageProps> = ({ themeMode, setThemeMode }) => {
+  const navigate = useNavigate();
   return (
     <div className="features-page">
       <div className="bg-glow top-glow" />

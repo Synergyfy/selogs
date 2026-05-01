@@ -163,7 +163,7 @@
   width: 100%;
   padding: 18px;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border: none;
   border-radius: 16px;
   font-size: 16px;
@@ -248,7 +248,7 @@
 
 .plan-onboarding-card.active .plan-o-icon {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
 }
 
 .plan-onboarding-card h3 {
@@ -375,7 +375,7 @@
 .step-pill.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: white;
+  color: var(--on-accent);
 }
 
 .feature-list-minimal {
@@ -570,7 +570,7 @@
 
 .mode-item-premium.active .mode-icon-box-premium {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border-color: var(--accent);
 }
 
@@ -707,7 +707,7 @@
   width: 28px;
   height: 28px;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border-radius: 50%;
   display: flex;
   align-items: center;

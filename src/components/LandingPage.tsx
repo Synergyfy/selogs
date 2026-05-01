@@ -2,9 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Zap, WifiOff, ChevronRight, Lock, 
+  Zap, WifiOff, ChevronRight, 
   Hotel, Building2, Building, PartyPopper, Check,
-  Smartphone, Database, LayoutDashboard, MapPin, Users,
+  Smartphone, Database, LayoutDashboard, 
   ShieldCheck, MessageSquare
 } from 'lucide-react';
 import PublicHeader from './PublicHeader';

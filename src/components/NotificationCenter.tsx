@@ -7,8 +7,7 @@ import {
   AlertTriangle, 
   CreditCard, 
   Info,
-  Clock,
-  Trash2
+  Clock
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';

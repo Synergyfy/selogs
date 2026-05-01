@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Building2, 
-  Users, 
   TrendingUp, 
   DollarSign, 
   ShieldCheck, 

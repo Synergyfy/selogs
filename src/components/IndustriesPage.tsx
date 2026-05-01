@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Hotel, Building2, ShieldCheck, Building, CheckCircle2 } from 'lucide-react';
 import PublicHeader from './PublicHeader';
@@ -12,6 +13,7 @@ interface IndustriesPageProps {
 }
 
 const IndustriesPage: React.FC<IndustriesPageProps> = ({ themeMode, setThemeMode }) => {
+  const navigate = useNavigate();
   return (
     <div className="industries-page">
       <div className="bg-glow top-glow" />

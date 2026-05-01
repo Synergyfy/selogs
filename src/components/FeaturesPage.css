@@ -151,7 +151,7 @@
 .status-badge.offline {
   padding: 16px 32px;
   background: #ef4444;
-  color: white;
+  color: var(--on-accent);
   border-radius: 9999px;
   font-weight: 800;
   animation: pulse 2s infinite;
@@ -169,7 +169,7 @@
   border-radius: 48px;
   padding: 80px 40px;
   text-align: center;
-  color: white;
+  color: var(--on-accent);
   margin-bottom: 120px;
 }
 

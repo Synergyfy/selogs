@@ -1,4 +1,4 @@
-import { db, type VehicleEntry } from './db';
+import { db } from './db';
 
 class SyncService {
   private isSyncing = false;

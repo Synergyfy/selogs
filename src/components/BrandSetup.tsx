@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Upload, Palette, Type, ArrowRight, ArrowLeft, ShieldCheck, X, CheckCircle2 } from 'lucide-react';
+import { Upload, Type, ArrowRight, ArrowLeft, ShieldCheck, X } from 'lucide-react';
 import './AuthLayout.css';
 
 const BrandSetup: React.FC = () => {

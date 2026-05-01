@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { 
   CreditCard, 
   History, 
@@ -7,8 +6,7 @@ import {
   ExternalLink,
   Plus,
   ShieldCheck,
-  Calendar,
-  DollarSign
+  Calendar
 } from 'lucide-react';
 import './Dashboard.css';
 

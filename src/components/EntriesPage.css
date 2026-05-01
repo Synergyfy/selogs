@@ -102,21 +102,40 @@
   cursor: not-allowed;
 }
 
+.entries-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
 .table-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0; /* Important for flex child with overflow */
 }
 
 .table-wrapper {
   overflow-x: auto;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .entries-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.entries-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .entries-table th {
@@ -132,7 +151,7 @@
 }
 
 .entries-table td {
-  padding: 20px 24px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border-light);
   font-size: 14px;
 }
@@ -162,14 +181,6 @@
   font-weight: 800;
 }
 
-.device-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
 .no-data {
   padding: 60px !important;
   text-align: center;
@@ -177,12 +188,15 @@
   font-weight: 600;
 }
 
+
 .table-pagination {
-  padding: 20px 32px;
+  padding: 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: var(--bg-input);
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
 }
 
 .pagination-info {

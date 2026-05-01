@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import ConnectDevice from './components/ConnectDevice'
 import StaffCheckIn from './components/StaffCheckIn'
@@ -42,18 +42,9 @@ import LoginPage from './components/LoginPage'
 import PricingPage from './components/PricingPage'
 import FeaturesPage from './components/FeaturesPage'
 import IndustriesPage from './components/IndustriesPage'
-import { 
-  LayoutDashboard, 
-  List, 
-  Building2, 
-  Users, 
-  Smartphone, 
-  CreditCard, 
-  Settings 
-} from 'lucide-react'
 import { db, type VehicleEntry } from './services/db'
 import type { ThemeMode } from './types'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { useAuth } from './context/AuthContext'
 import { notificationService } from './services/NotificationService'
 import './App.css'
 
@@ -86,17 +77,7 @@ const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?
   return user?.isAuthenticated ? <>{children}</> : null;
 };
 
-const navItems = [
-  { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Overview' },
-  { path: '/dashboard/entries', icon: <List size={20} />, label: 'Vehicle Entries' },
-  { path: '/dashboard/branches', icon: <Building2 size={20} />, label: 'Branches' },
-  { path: '/dashboard/staff', icon: <Users size={20} />, label: 'Staff' },
-  { path: '/dashboard/devices', icon: <Smartphone size={20} />, label: 'Devices' },
-  { path: '/dashboard/subscription', icon: <CreditCard size={20} />, label: 'Subscription' },
-  { path: '/dashboard/settings', icon: <Settings size={20} />, label: 'Settings' },
-];
-
-type Screen = 'connect' | 'checkin' | 'home' | 'new_entry' | 'history'
+type Screen = 'connect' | 'checkin' | 'home' | 'new_entry' | 'history' | 'check_out'
 
 // Helper for mobile app to receive theme
 function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleTheme: () => void }) {
@@ -373,6 +354,40 @@ function App() {
   const toggleTheme = () => {
     setThemeMode(prev => prev === 'dark' ? 'light' : 'dark');
   };
+
+  // Dynamic Contrast Handler
+  useEffect(() => {
+    const checkContrast = () => {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      if (!accent) return;
+
+      // Helper to parse hex to RGB
+      const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : null;
+      };
+
+      const rgb = hexToRgb(accent);
+      if (rgb) {
+        // Calculate YIQ brightness
+        const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
+        const contrastColor = yiq >= 128 ? '#0f172a' : '#ffffff';
+        document.documentElement.style.setProperty('--on-accent', contrastColor);
+      }
+    };
+
+    checkContrast();
+    
+    // Watch for style changes (if user updates brand color)
+    const observer = new MutationObserver(checkContrast);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    
+    return () => observer.disconnect();
+  }, [effectiveTheme]);
 
   return (
     <>
