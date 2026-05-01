@@ -1,0 +1,239 @@
+.contact-page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(var(--border-light) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--text-primary);
+}
+
+.contact-hero {
+  padding: 80px 0 60px;
+  position: relative;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .contact-hero {
+    padding: 100px 0 80px;
+  }
+}
+
+.contact-content-section {
+  padding-bottom: 100px;
+  position: relative;
+  z-index: 10;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+}
+
+@media (min-width: 1024px) {
+  .contact-grid {
+    grid-template-columns: 1fr 400px;
+  }
+}
+
+.form-card {
+  padding: 40px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+.form-card h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 32px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* Info Container */
+.info-card {
+  padding: 40px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  margin-bottom: 24px;
+}
+
+.info-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.info-card p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.info-items {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-text strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.info-text span {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.mini-socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mini-socials a {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.support-badge {
+  margin-top: 40px;
+  padding: 12px;
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Chat Card */
+.chat-card {
+  padding: 24px;
+  background: linear-gradient(135deg, #6366f1, #9333ea);
+  border-radius: 24px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.chat-card h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.chat-card p {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.btn-glass-sm {
+  padding: 8px 16px;
+  background-color: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  margin-left: auto;
+}
+@media (max-width: 768px) {
+  .contact-hero {
+    padding: 60px 0 40px;
+  }
+  .hero-title {
+    font-size: 36px;
+  }
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .form-card, .info-card {
+    padding: 24px;
+  }
+  .chat-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  .btn-glass-sm {
+    margin-left: 0;
+    width: 100%;
+  }
+}

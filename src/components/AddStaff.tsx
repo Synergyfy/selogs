@@ -2,197 +2,161 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Trash2, Users, Phone, Fingerprint, ArrowRight, ArrowLeft, ShieldCheck, User } from 'lucide-react';
-import './AddStaff.css';
+import './AuthLayout.css';
 
 interface StaffMember {
   id: string;
   name: string;
   staffId: string;
-  phone?: string;
 }
 
 const AddStaff: React.FC = () => {
   const navigate = useNavigate();
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
-  const [formData, setFormData] = useState({
-    name: '',
-    staffId: '',
-    phone: ''
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const [formData, setFormData] = useState({ name: '', staffId: '' });
 
   const handleAddMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.staffId) return;
-
     const newMember: StaffMember = {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
-      staffId: formData.staffId,
-      phone: formData.phone
+      staffId: formData.staffId
     };
-
     setStaffList([...staffList, newMember]);
-    setFormData({ name: '', staffId: '', phone: '' });
+    setFormData({ name: '', staffId: '' });
   };
 
   const handleRemoveMember = (id: string) => {
-    setStaffList(staffList.filter(member => member.id !== id));
-  };
-
-  const handleSubmit = () => {
-    // In a real app, save staff list here
-    navigate('/device-setup');
+    setStaffList(staffList.filter(m => m.id !== id));
   };
 
   return (
     <div className="auth-page">
-      <div className="bg-glow top-left-glow" />
-      <div className="bg-glow bottom-right-glow" />
+      <div className="auth-glow auth-glow-1" />
+      <div className="auth-glow auth-glow-2" />
 
-      <div className="auth-container">
-        <div className="auth-brand" onClick={() => navigate('/')}>
-          <div className="auth-logo">
-            <ShieldCheck className="icon-white" />
-          </div>
-          <span className="auth-title">VGuard</span>
+      {/* Visual Side */}
+      <div className="auth-visual-side">
+        <div className="auth-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <ShieldCheck className="icon-md" style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: '24px', fontWeight: 800, color: 'white', marginLeft: '12px' }}>VGuard</span>
         </div>
 
-        <motion.div 
-          className="auth-card staff-card-container"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <button 
-            type="button" 
-            className="back-btn" 
-            onClick={() => navigate(-1)}
-            title="Go Back"
+        <div className="visual-content">
+          <motion.h2
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            <ArrowLeft className="icon-sm" />
-          </button>
+            Build your <br /> <span className="text-gradient">Security Team.</span>
+          </motion.h2>
+          <p>Add the personnel who will be responsible for vehicle check-ins and gate security.</p>
+        </div>
 
-          <div className="auth-header">
-            <h2>Add Staff Members</h2>
-            <p>Register the security personnel who will be using the system.</p>
+        <div className="visual-stats">
+          <div className="v-stat">
+            <h4>{staffList.length}</h4>
+            <span>Members Added</span>
           </div>
+        </div>
+      </div>
 
-          <form onSubmit={handleAddMember} className="auth-form mb-24">
-            <div className="form-group">
-              <label htmlFor="name">Staff Name</label>
-              <div className="input-wrapper">
-                <User className="input-icon" />
-                <input 
-                  type="text" 
-                  id="name" 
-                  name="name" 
-                  placeholder="e.g. Samuel Okon" 
-                  required 
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
+      {/* Form Side */}
+      <div className="auth-form-side">
+        <div className="auth-container-premium">
+          <motion.div 
+            className="auth-card-premium"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <button className="back-btn-minimal" onClick={() => navigate(-1)}>
+              <ArrowLeft size={18} /> Previous Step
+            </button>
+
+            <div className="auth-header">
+              <h2>Staff Management</h2>
+              <p>Add security staff to your organization.</p>
             </div>
 
-            <div className="form-row">
-              <div className="form-group flex-1">
-                <label htmlFor="staffId">Staff ID / Code</label>
-                <div className="input-wrapper">
+            <form onSubmit={handleAddMember} className="auth-form mb-32">
+              <div className="input-group-premium">
+                <label>Staff Full Name</label>
+                <div className="input-field-wrapper">
+                  <User className="input-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Samuel Okon" 
+                    required 
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group-premium">
+                <label>Staff ID / Access Code</label>
+                <div className="input-field-wrapper">
                   <Fingerprint className="input-icon" />
                   <input 
                     type="text" 
-                    id="staffId" 
-                    name="staffId" 
                     placeholder="ID-001" 
                     required 
                     value={formData.staffId}
-                    onChange={handleChange}
+                    onChange={(e) => setFormData({...formData, staffId: e.target.value})}
                   />
                 </div>
               </div>
-              <div className="form-group flex-1">
-                <label htmlFor="phone">Phone (Optional)</label>
-                <div className="input-wrapper">
-                  <Phone className="input-icon" />
-                  <input 
-                    type="tel" 
-                    id="phone" 
-                    name="phone" 
-                    placeholder="080..." 
-                    value={formData.phone}
-                    onChange={handleChange}
-                  />
-                </div>
+
+              <button type="submit" className="btn-auth-outline">
+                <UserPlus size={18} />
+                Add Staff Member
+              </button>
+            </form>
+
+            <div className="staff-preview-section">
+              <div className="preview-header">
+                <Users size={16} />
+                <span>Team Members ({staffList.length})</span>
               </div>
-            </div>
-
-            <button type="submit" className="btn-secondary w-full">
-              <UserPlus className="icon-sm" />
-              Add Member
-            </button>
-          </form>
-
-          <div className="staff-list-section">
-            <div className="section-header">
-              <Users className="icon-sm" />
-              <h3>Added Staff ({staffList.length})</h3>
-            </div>
-
-            <div className="staff-list">
-              <AnimatePresence mode="popLayout">
-                {staffList.length === 0 ? (
-                  <motion.p 
-                    key="empty"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="empty-state"
-                  >
-                    No staff members added yet.
-                  </motion.p>
-                ) : (
-                  staffList.map((member) => (
-                    <motion.div 
-                      key={member.id}
-                      className="staff-member-item"
-                      initial={{ opacity: 0, scale: 0.95, x: -20 }}
-                      animate={{ opacity: 1, scale: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, x: 20 }}
-                      layout
-                    >
-                      <div className="member-info">
-                        <span className="member-name">{member.name}</span>
-                        <span className="member-id">ID: {member.staffId}</span>
-                      </div>
-                      <button 
-                        onClick={() => handleRemoveMember(member.id)}
-                        className="remove-btn"
-                        title="Remove member"
+              <div className="staff-stack-premium">
+                <AnimatePresence mode="popLayout">
+                  {staffList.length === 0 ? (
+                    <motion.p key="empty" className="empty-msg">No staff added yet.</motion.p>
+                  ) : (
+                    staffList.map((m) => (
+                      <motion.div 
+                        key={m.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="staff-chip-premium"
                       >
-                        <Trash2 className="icon-xs" />
-                      </button>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
+                        <div className="s-info">
+                          <strong>{m.name}</strong>
+                          <span>{m.staffId}</span>
+                        </div>
+                        <button onClick={() => handleRemoveMember(m.id)} className="remove-s-btn">
+                          <Trash2 size={14} />
+                        </button>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
 
-          <button 
-            onClick={handleSubmit} 
-            className="btn-submit mt-32"
-            disabled={staffList.length === 0}
-          >
-            Continue
-            <ArrowRight className="icon-sm" />
-          </button>
-        </motion.div>
+            <button 
+              onClick={() => navigate('/device-setup')} 
+              className="btn-auth-submit"
+              disabled={staffList.length === 0}
+              style={{ marginTop: '32px' }}
+            >
+              Continue to Device Setup
+              <ArrowRight size={18} />
+            </button>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

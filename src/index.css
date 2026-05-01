@@ -101,6 +101,8 @@ body {
   min-height: 100%;
   line-height: 1.5;
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
@@ -901,6 +903,8 @@ img { max-width: 100%; display: block; }
   flex-direction: column;
   gap: 10px;
 }
+
+
 
 .staff-chip {
   display: flex;

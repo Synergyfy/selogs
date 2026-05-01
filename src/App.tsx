@@ -6,6 +6,7 @@ import ConnectDevice from './components/ConnectDevice'
 import StaffCheckIn from './components/StaffCheckIn'
 import Home from './components/Home'
 import NewEntry from './components/NewEntry'
+import CheckOut from './components/CheckOut'
 import History from './components/History'
 import LandingPage from './components/LandingPage'
 import CreateAccount from './components/CreateAccount'
@@ -20,12 +21,80 @@ import Dashboard from './components/Dashboard'
 import EntriesPage from './components/EntriesPage'
 import StaffManagement from './components/StaffManagement'
 import DevicesPage from './components/DevicesPage'
+import BranchesPage from './components/BranchesPage'
+import SubscriptionPage from './components/SubscriptionPage'
+import BillingPage from './components/BillingPage'
 import SettingsPage from './components/SettingsPage'
+import SuperAdminLayout from './components/SuperAdminLayout'
+import SuperAdminDashboard from './components/SuperAdminDashboard'
+import SuperAdminCustomers from './components/SuperAdminCustomers'
+import SuperAdminPlans from './components/SuperAdminPlans'
+import SuperAdminBilling from './components/SuperAdminBilling'
+import SuperAdminNotifications from './components/SuperAdminNotifications'
+import SuperAdminSettings from './components/SuperAdminSettings'
+import SuperAdminFeatures from './components/SuperAdminFeatures'
 import PWAPrompt from './components/PWAPrompt'
+import FAQPage from './components/FAQPage'
+import ContactPage from './components/ContactPage'
+import ForgotPassword from './components/ForgotPassword'
+import PlanSelection from './components/PlanSelection'
 import LoginPage from './components/LoginPage'
+import PricingPage from './components/PricingPage'
+import FeaturesPage from './components/FeaturesPage'
+import IndustriesPage from './components/IndustriesPage'
+import { 
+  LayoutDashboard, 
+  List, 
+  Building2, 
+  Users, 
+  Smartphone, 
+  CreditCard, 
+  Settings 
+} from 'lucide-react'
 import { db, type VehicleEntry } from './services/db'
 import type { ThemeMode } from './types'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { notificationService } from './services/NotificationService'
 import './App.css'
+
+// Route protection wrapper
+const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
+  const { user, isLoading, userRole, organization } = useAuth();
+
+  useEffect(() => {
+    // Run lifecycle checks on app startup if user is logged in
+    if (user?.isAuthenticated && organization) {
+      notificationService.checkLifecycleEvents({
+        id: organization.id,
+        joinedDate: organization.joinedDate || Date.now() - (11 * 24 * 60 * 60 * 1000), // Default mock: 11 days ago
+        plan: organization.plan
+      });
+    }
+  }, [user, organization]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !user?.isAuthenticated) {
+      navigate('/login');
+    }
+    if (!isLoading && roles && userRole && !roles.includes(userRole)) {
+      navigate('/dashboard');
+    }
+  }, [user, isLoading, userRole, roles, navigate]);
+
+  if (isLoading) return <div className="loading-screen">Authenticating...</div>;
+  return user?.isAuthenticated ? <>{children}</> : null;
+};
+
+const navItems = [
+  { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Overview' },
+  { path: '/dashboard/entries', icon: <List size={20} />, label: 'Vehicle Entries' },
+  { path: '/dashboard/branches', icon: <Building2 size={20} />, label: 'Branches' },
+  { path: '/dashboard/staff', icon: <Users size={20} />, label: 'Staff' },
+  { path: '/dashboard/devices', icon: <Smartphone size={20} />, label: 'Devices' },
+  { path: '/dashboard/subscription', icon: <CreditCard size={20} />, label: 'Subscription' },
+  { path: '/dashboard/settings', icon: <Settings size={20} />, label: 'Settings' },
+];
 
 type Screen = 'connect' | 'checkin' | 'home' | 'new_entry' | 'history'
 
@@ -158,7 +227,8 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
       staffId: staff.id,
       staffName: staff.name,
       synced: false,
-      image: data.image
+      image: data.image,
+      status: 'IN'
     }
 
     await db.entries.add(newEntry)
@@ -232,6 +302,7 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
           staffName={staff?.name}
           staffId={staff?.id}
           onNewEntry={() => setScreen('new_entry')} 
+          onCheckOut={() => setScreen('check_out')}
           onSync={handleSync} 
           onViewHistory={() => setScreen('history')} 
           onEndShift={handleEndShift} 
@@ -240,6 +311,18 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
       {screen === 'new_entry' && (
         <NewEntry 
           onSave={handleNewEntry} 
+          onCancel={() => setScreen('home')} 
+        />
+      )}
+      {screen === 'check_out' && (
+        <CheckOut 
+          staffId={staff?.id}
+          staffName={staff?.name}
+          onCheckOutComplete={() => {
+            setScreen('home');
+            const count = async () => setUnsyncedCount(await db.entries.where('synced').equals(0).count());
+            count();
+          }} 
           onCancel={() => setScreen('home')} 
         />
       )}
@@ -295,20 +378,39 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<LandingPage themeMode={themeMode} setThemeMode={setThemeMode} />} />
+        <Route path="/features" element={<FeaturesPage themeMode={themeMode} setThemeMode={setThemeMode} />} />
+        <Route path="/industries" element={<IndustriesPage themeMode={themeMode} setThemeMode={setThemeMode} />} />
+        <Route path="/pricing" element={<PricingPage themeMode={themeMode} setThemeMode={setThemeMode} />} />
+        <Route path="/faq" element={<FAQPage themeMode={themeMode} setThemeMode={setThemeMode} />} />
+        <Route path="/contact" element={<ContactPage themeMode={themeMode} setThemeMode={setThemeMode} />} />
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-account" element={<VerifyAccount />} />
         <Route path="/create-organization" element={<CreateOrganization />} />
+        <Route path="/plan-selection" element={<PlanSelection />} />
         <Route path="/brand-setup" element={<BrandSetup />} />
         <Route path="/system-mode" element={<SystemMode />} />
         <Route path="/add-staff" element={<AddStaff />} />
         <Route path="/device-setup" element={<DeviceSetup />} />
         <Route path="/app/*" element={<MobileApp theme={effectiveTheme} toggleTheme={toggleTheme} />} />
-        <Route path="/dashboard" element={<DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><Dashboard /></DashboardLayout>} />
-        <Route path="/dashboard/entries" element={<DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><EntriesPage /></DashboardLayout>} />
-        <Route path="/dashboard/staff" element={<DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><StaffManagement /></DashboardLayout>} />
-        <Route path="/dashboard/devices" element={<DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><DevicesPage /></DashboardLayout>} />
-        <Route path="/dashboard/settings" element={<DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SettingsPage /></DashboardLayout>} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><Dashboard /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/entries" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><EntriesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/branches" element={<ProtectedRoute roles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BranchesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/staff" element={<ProtectedRoute roles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><StaffManagement /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/devices" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><DevicesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/subscription" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SubscriptionPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/billing" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BillingPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/settings" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SettingsPage /></DashboardLayout></ProtectedRoute>} />
+        
+        {/* Super Admin Routes */}
+        <Route path="/super-admin" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminDashboard /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/customers" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminCustomers /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/plans" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminPlans /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/features" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminFeatures /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/billing" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminBilling /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/notifications" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminNotifications /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/settings" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout><SuperAdminSettings /></SuperAdminLayout></ProtectedRoute>} />
       </Routes>
       <PWAPrompt />
     </>
