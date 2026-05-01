@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Smartphone, Download, Key, Copy, Check, ArrowRight, ArrowLeft, ShieldCheck, ExternalLink, QrCode } from 'lucide-react';
+import { Copy, Check, ArrowRight, ArrowLeft, ShieldCheck, ExternalLink, QrCode } from 'lucide-react';
 import './AuthLayout.css';
 
 const DeviceSetup: React.FC = () => {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Minus, CircleHelp } from 'lucide-react';
 import PublicHeader from './PublicHeader';
@@ -38,6 +39,7 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 };
 
 const FAQPage: React.FC<FAQPageProps> = ({ themeMode, setThemeMode }) => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('general');
 

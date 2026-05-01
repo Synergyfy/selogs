@@ -5,7 +5,6 @@ import {
   Download, 
   Calendar, 
   User, 
-  Smartphone,
   ChevronLeft,
   ChevronRight,
   Trash2,

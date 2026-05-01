@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
-  Building2, 
   Search, 
   Filter, 
   MoreVertical, 
-  PauseCircle, 
-  PlayCircle, 
-  Calendar,
-  ExternalLink,
-  ShieldAlert,
-  ArrowUpRight
+  ExternalLink
 } from 'lucide-react';
 import './Dashboard.css';
 

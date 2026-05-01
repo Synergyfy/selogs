@@ -4,17 +4,11 @@ import {
   Plus, 
   MapPin, 
   Building2, 
-  Users, 
-  Smartphone, 
   X, 
-  Check, 
   Edit2, 
   Trash2, 
-  ArrowUpRight,
-  ShieldCheck,
   DollarSign,
-  AlertCircle,
-  Info
+  AlertCircle
 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import './Dashboard.css';

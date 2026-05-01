@@ -15,7 +15,8 @@ import {
   Monitor,
   Building2,
   CreditCard,
-  Bell
+  Bell,
+  Zap
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';

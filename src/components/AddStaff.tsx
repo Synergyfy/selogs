@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Trash2, Users, Phone, Fingerprint, ArrowRight, ArrowLeft, ShieldCheck, User } from 'lucide-react';
+import { UserPlus, Trash2, Users, Fingerprint, ArrowRight, ArrowLeft, ShieldCheck, User } from 'lucide-react';
 import './AuthLayout.css';
 
 interface StaffMember {

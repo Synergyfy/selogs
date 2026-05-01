@@ -6,12 +6,10 @@ import {
   ShieldCheck, 
   ArrowRight, 
   ArrowLeft, 
-  KeyRound, 
   Lock, 
   Eye, 
   EyeOff,
-  CheckCircle2,
-  Clock
+  CheckCircle2
 } from 'lucide-react';
 import './AuthLayout.css';
 

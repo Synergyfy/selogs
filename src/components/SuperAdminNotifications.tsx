@@ -9,8 +9,7 @@ import {
   AlertCircle,
   Plus,
   Trash2,
-  Clock,
-  CheckCircle2
+  Clock
 } from 'lucide-react';
 import './Dashboard.css';
 

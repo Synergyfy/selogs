@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building, Briefcase, MapPin, ArrowRight, ArrowLeft, ShieldCheck, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Building, Briefcase, MapPin, ArrowRight, ShieldCheck, ChevronDown } from 'lucide-react';
 import './AuthLayout.css';
 
 const CreateOrganization: React.FC = () => {

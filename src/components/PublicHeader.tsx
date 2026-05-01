@@ -14,16 +14,6 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({ themeMode, setThemeMode }) 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const scrollToSection = (id: string) => {
-    if (location.pathname !== '/') {
-      navigate('/#' + id);
-      return;
-    }
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   const navTo = (path: string) => {
     navigate(path);

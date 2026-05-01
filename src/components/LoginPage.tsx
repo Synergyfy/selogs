@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, ArrowLeft, CheckCircle2, Crown, Smartphone } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, ArrowLeft, Crown, Smartphone } from 'lucide-react';
 import './AuthLayout.css';
 
 const LoginPage: React.FC = () => {

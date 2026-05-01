@@ -534,12 +534,18 @@
 }
 
 .cta-shield-icon {
-    text-align: center;
-    padding: 60px 24px;
+  width: 120px;
+  height: 120px;
+  color: var(--accent);
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .cta-wrapper {
+    padding: 40px 20px;
   }
-  .cta-text h2 { font-size: 32px; }
-  .cta-buttons { justify-content: center; }
-  .cta-visual { display: none; }
+  .cta-text h2 { font-size: 28px; }
+  .cta-buttons { flex-direction: column; width: 100%; }
 }
 
 .centered { text-align: center; }
