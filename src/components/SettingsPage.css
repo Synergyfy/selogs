@@ -259,24 +259,30 @@
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background-color: var(--bg-card);
+  width: 48px;
+  height: 48px;
+  background: var(--bg-card);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.mode-card-mini.selected .mode-icon-circle {
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .mode-info-mini h4 {
   font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: 800;
   margin-bottom: 4px;
 }
 
 .mode-info-mini p {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-dim);
 }
 
 .check-icon-mini {
@@ -287,14 +293,14 @@
 
 /* Footer */
 .settings-footer {
-  padding: 24px 32px;
+  padding: 24px 40px;
+  background: var(--bg-input);
   border-top: 1px solid var(--border-light);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background-color: var(--bg-card);
-  position: sticky;
-  bottom: 0;
+  justify-content: flex-end;
+  border-radius: 0 0 28px 28px;
+  gap: 20px;
 }
 
 .success-toast {
@@ -302,21 +308,20 @@
   align-items: center;
   gap: 8px;
   color: #10b981;
-  font-weight: 700;
   font-size: 14px;
+  font-weight: 700;
 }
 
 .footer-btns {
   display: flex;
   gap: 16px;
-  margin-left: auto;
 }
 
 .spinner-mini {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: var(--on-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -325,21 +330,19 @@
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 640px) {
-  .settings-section {
-    padding: 20px;
+@media (max-width: 768px) {
+  .settings-container {
+    flex-direction: column;
   }
-  
   .settings-tabs {
+    width: 100%;
     flex-direction: row;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
   }
-  
   .tab-btn {
     white-space: nowrap;
   }
-  
   .active-indicator {
     bottom: 0;
     left: 20px;

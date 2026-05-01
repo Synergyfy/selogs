@@ -18,6 +18,7 @@
 
   --accent: #3b82f6;
   --accent-hover: #2563eb;
+  --on-accent: #ffffff;
   --accent-glow: rgba(59, 130, 246, 0.35);
   --accent-subtle: rgba(59, 130, 246, 0.12);
 
@@ -75,6 +76,7 @@
   --bg-glass: rgba(255, 255, 255, 0.8);
   --bg-icon: rgba(0, 0, 0, 0.05);
   --bg-icon-hover: rgba(0, 0, 0, 0.1);
+  --on-accent: #ffffff; 
   --camera-bg: #1e293b;
 }
 
@@ -101,6 +103,8 @@ body {
   min-height: 100%;
   line-height: 1.5;
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
@@ -220,8 +224,13 @@ img { max-width: 100%; display: block; }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent) 0%, #1d4ed8 100%);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: var(--shadow-glow), var(--shadow-md);
+}
+
+/* Ensure icons also follow the dynamic color */
+.btn-primary svg {
+  color: inherit;
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 30px var(--accent-glow), var(--shadow-lg); }
 .btn-primary:active { transform: scale(0.98) translateY(0); }
@@ -901,6 +910,8 @@ img { max-width: 100%; display: block; }
   flex-direction: column;
   gap: 10px;
 }
+
+
 
 .staff-chip {
   display: flex;

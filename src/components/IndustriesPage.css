@@ -1,0 +1,132 @@
+.industries-page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.industries-hero {
+  padding: 120px 0 80px;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Industry Rows */
+.industry-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border-light);
+}
+
+.industry-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.industry-icon-box {
+  width: 72px;
+  height: 72px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.industry-header h2 {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.industry-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .industry-grid {
+    grid-template-columns: 1fr 1.2fr;
+  }
+  .industry-grid.reverse {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.industry-text p {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.benefit-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.benefit-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.benefit-list li .icon-xs {
+  color: var(--accent);
+}
+
+.industry-image {
+  width: 100%;
+  height: 400px;
+  border-radius: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: flex-end;
+  padding: 40px;
+}
+
+.industry-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  z-index: 1;
+}
+
+.overlay-text {
+  position: relative;
+  z-index: 2;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--accent);
+  padding: 8px 20px;
+  border-radius: 9999px;
+  color: white;
+}

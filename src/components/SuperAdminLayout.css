@@ -1,0 +1,73 @@
+.sa-theme {
+  --sa-primary: #8b5cf6;
+  --sa-primary-glow: rgba(139, 92, 246, 0.3);
+}
+
+.sa-logo {
+  background: linear-gradient(135deg, #8b5cf6, #d946ef) !important;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4) !important;
+}
+
+.sa-badge {
+  font-size: 10px;
+  background: var(--sa-primary);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-weight: 900;
+  vertical-align: middle;
+  letter-spacing: 1px;
+}
+
+.sa-avatar {
+  background: var(--sa-primary) !important;
+  color: white !important;
+  font-weight: 800;
+}
+
+.sa-header {
+  border-bottom: 2px solid var(--sa-primary-glow) !important;
+}
+
+.sa-theme .nav-item.active {
+  background: var(--sa-primary-glow) !important;
+  color: #c084fc !important;
+}
+
+.sa-theme .nav-item.active .nav-icon {
+  color: #c084fc !important;
+}
+
+/* Master Overview Stats */
+.sa-stat-card {
+  border-left: 4px solid var(--sa-primary);
+}
+
+.sa-revenue-text {
+  color: #10b981;
+  font-weight: 800;
+}
+
+.sa-customer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.sa-plan-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.sa-plan-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at top right, var(--sa-primary-glow), transparent 70%);
+  pointer-events: none;
+}

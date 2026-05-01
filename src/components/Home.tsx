@@ -10,6 +10,7 @@ interface HomeProps {
   staffName?: string;
   staffId?: string;
   onNewEntry: () => void;
+  onCheckOut?: () => void;
   onSync: () => void;
   onViewHistory: () => void;
   onEndShift: () => void;
@@ -17,7 +18,7 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ 
   unsyncedCount, isOnline, isSyncing, staffName, staffId, 
-  onNewEntry, onSync, onViewHistory, onEndShift 
+  onNewEntry, onCheckOut, onSync, onViewHistory, onEndShift 
 }) => {
   const [recentEntries, setRecentEntries] = useState<VehicleEntry[]>([]);
   const [showSummary, setShowSummary] = useState(false);
@@ -70,21 +71,32 @@ const Home: React.FC<HomeProps> = ({
         </div>
       </div>
 
-      {/* Primary CTA */}
-      <motion.div 
-        className="home-cta"
-        whileTap={{ scale: 0.98 }}
-      >
-        <button onClick={onNewEntry} className="home-cta-btn">
-          <div className="home-cta-icon">
-            <Plus size={28} strokeWidth={2.5} />
-          </div>
-          <div className="home-cta-content">
-            <span className="home-cta-text">New Vehicle Entry</span>
-            <span className="home-cta-sub">Tap to capture a plate number</span>
-          </div>
-        </button>
-      </motion.div>
+      {/* Primary CTAs */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '0 20px', marginBottom: '24px' }}>
+        <motion.div whileTap={{ scale: 0.98 }}>
+          <button onClick={onNewEntry} className="home-cta-btn" style={{ padding: '16px 12px' }}>
+            <div className="home-cta-icon" style={{ marginBottom: '8px' }}>
+              <Plus size={24} strokeWidth={2.5} />
+            </div>
+            <div className="home-cta-content" style={{ textAlign: 'center' }}>
+              <span className="home-cta-text" style={{ fontSize: '14px' }}>Check-In</span>
+              <span className="home-cta-sub" style={{ fontSize: '11px' }}>New Entry</span>
+            </div>
+          </button>
+        </motion.div>
+        
+        <motion.div whileTap={{ scale: 0.98 }}>
+          <button onClick={onCheckOut} className="home-cta-btn" style={{ padding: '16px 12px', background: 'var(--surface)', border: '1px solid var(--border-light)' }}>
+            <div className="home-cta-icon" style={{ marginBottom: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+              <LogOut size={24} strokeWidth={2.5} />
+            </div>
+            <div className="home-cta-content" style={{ textAlign: 'center' }}>
+              <span className="home-cta-text" style={{ fontSize: '14px', color: 'var(--text)' }}>Check-Out</span>
+              <span className="home-cta-sub" style={{ fontSize: '11px' }}>Exit Vehicle</span>
+            </div>
+          </button>
+        </motion.div>
+      </div>
 
       {/* Stats Grid */}
       <div className="home-stats">
@@ -150,13 +162,18 @@ const Home: React.FC<HomeProps> = ({
                     )}
                   </div>
                 </div>
-                {entry.synced ? (
-                  <span className="badge badge-success">
-                    <CheckCircle2 size={10} /> Synced
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <span className={`badge ${entry.status === 'OUT' ? 'badge-neutral' : 'badge-primary'}`} style={{ fontSize: '10px', padding: '2px 6px' }}>
+                    {entry.status || 'IN'}
                   </span>
-                ) : (
-                  <span className="badge badge-warning">Pending</span>
-                )}
+                  {entry.synced ? (
+                    <span className="text-success" style={{ fontSize: '10px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <CheckCircle2 size={10} /> Synced
+                    </span>
+                  ) : (
+                    <span className="text-warning" style={{ fontSize: '10px' }}>Pending</span>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
