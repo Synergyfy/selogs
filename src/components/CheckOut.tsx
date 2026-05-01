@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, ArrowLeft, Clock, Car, LogOut, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, type VehicleEntry } from '../services/db';
@@ -11,23 +11,20 @@ interface CheckOutProps {
   onCancel: () => void;
 }
 
+import { useLiveQuery } from 'dexie-react-hooks';
+
 const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutComplete, onCancel }) => {
-  const [activeVehicles, setActiveVehicles] = useState<VehicleEntry[]>([]);
+  const activeVehicles = useLiveQuery(() => 
+    db.entries
+      .filter(e => !e.status || e.status === 'IN')
+      .reverse()
+      .sortBy('timestamp')
+  ) || [];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleEntry | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  useEffect(() => {
-    const loadActiveVehicles = async () => {
-      const allEntries = await db.entries.toArray();
-      const active = allEntries
-        .filter(e => !e.status || e.status === 'IN')
-        .sort((a, b) => b.timestamp - a.timestamp);
-      setActiveVehicles(active);
-    };
-    loadActiveVehicles();
-  }, []);
 
   const filteredVehicles = activeVehicles.filter(v => 
     v.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -133,6 +130,9 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
                           <div className="vehicle-card-plate">{vehicle.plateNumber}</div>
                           <div className="vehicle-card-meta">
                             <Clock size={12} /> {new Date(vehicle.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <span className="staff-indicator" style={{ marginLeft: '8px', fontSize: '10px', opacity: 0.6 }}>
+                              by {vehicle.staffName || 'Staff'}
+                            </span>
                           </div>
                         </div>
                         <div className="vehicle-card-right">
