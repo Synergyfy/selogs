@@ -7,6 +7,8 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './auth/guards';
+import { BranchesModule } from './branches/branches.module';
+import { EntriesModule } from './entries/entries.module';
 
 @Module({
   imports: [
@@ -18,11 +20,14 @@ import { AtGuard } from './auth/guards';
         JWT_EXPIRES_IN: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_EXPIRES_IN: Joi.string().required(),
+        SUPER_ADMIN_SECRET: Joi.string().required(),
         PORT: Joi.number().default(5001),
       }),
     }),
     PrismaModule,
     AuthModule,
+    BranchesModule,
+    EntriesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SignupDto, LoginDto } from './dto';
 
@@ -23,13 +24,18 @@ export class AuthService {
   /**
    * Generates Access and Refresh tokens for a user.
    */
-  async getTokens(userId: string, email: string, role: string) {
+  /**
+   * Generates Access and Refresh tokens for a user.
+   */
+  async getTokens(userId: string, email: string, role: string, organizationId?: string | null, branchId?: string | null) {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         {
           sub: userId,
           email,
           role,
+          organizationId,
+          branchId,
         },
         {
           secret: this.config.get<string>('JWT_SECRET')!,
@@ -41,15 +47,14 @@ export class AuthService {
           sub: userId,
           email,
           role,
+          organizationId,
+          branchId,
         },
         {
           secret: this.config.get<string>('REFRESH_TOKEN_SECRET')!,
           expiresIn: this.config.get<string>('REFRESH_TOKEN_EXPIRES_IN') as any,
         },
       ),
-
-
-
     ]);
 
     return {
@@ -77,16 +82,57 @@ export class AuthService {
    * Signs up a new user.
    */
   async signup(dto: SignupDto) {
+    // 1. Check if user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existingUser) throw new ConflictException('User already exists');
+
+    // 2. Validate Super Admin creation
+    if (dto.role === Role.super_admin) {
+      const secret = this.config.get<string>('SUPER_ADMIN_SECRET');
+      if (!dto.superAdminSecret || dto.superAdminSecret !== secret) {
+        throw new ForbiddenException('Invalid Super Admin secret code');
+      }
+    }
+
+    // 3. Handle Admin signup (Organization creation)
+    let organizationId: string | undefined;
+    if (dto.role === Role.admin) {
+      if (!dto.organizationName) {
+        throw new BadRequestException('Organization name is required for admin signup');
+      }
+      
+      // Generate a unique 6-character code for the organization
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      const organization = await this.prisma.organization.create({
+        data: { 
+          name: dto.organizationName,
+          code,
+        },
+      });
+      organizationId = organization.id;
+    }
+
     const hash = await this.hashData(dto.password);
 
     const newUser = await this.prisma.user.create({
       data: {
         email: dto.email,
         passwordHash: hash,
+        role: dto.role,
+        organizationId: organizationId,
       },
     });
 
-    const tokens = await this.getTokens(newUser.id, newUser.email, newUser.role);
+    const tokens = await this.getTokens(
+      newUser.id, 
+      newUser.email, 
+      newUser.role, 
+      newUser.organizationId,
+      newUser.branchId
+    );
     await this.updateRtHash(newUser.id, tokens.refresh_token);
     return tokens;
   }
@@ -106,7 +152,13 @@ export class AuthService {
     const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordMatches) throw new ForbiddenException('Access Denied');
 
-    const tokens = await this.getTokens(user.id, user.email, user.role);
+    const tokens = await this.getTokens(
+      user.id, 
+      user.email, 
+      user.role, 
+      user.organizationId,
+      user.branchId
+    );
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
   }
@@ -143,7 +195,13 @@ export class AuthService {
     const rtMatches = await bcrypt.compare(rt, user.refreshTokenHash);
     if (!rtMatches) throw new ForbiddenException('Access Denied');
 
-    const tokens = await this.getTokens(user.id, user.email, user.role);
+    const tokens = await this.getTokens(
+      user.id, 
+      user.email, 
+      user.role, 
+      user.organizationId,
+      user.branchId
+    );
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
   }

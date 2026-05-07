@@ -21,14 +21,142 @@ enum Role {
   super_admin
 }
 
+enum GateType {
+  ENTRY
+  EXIT
+  BOTH
+}
+
+enum EntryStatus {
+  IN
+  OUT
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  code      String?  @unique
+  industry  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  users     User[]
+  branches  Branch[]
+  entries   VehicleEntry[]
+  devices   Device[]
+
+  @@map("organizations")
+}
+
+model Branch {
+  id             String   @id @default(uuid())
+  name           String
+  address        String?
+  code           String   @unique
+  organizationId String   @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  users          User[]
+  gates          Gate[]
+  entries        VehicleEntry[]
+  devices        Device[]
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("branches")
+}
+
+model Gate {
+  id        String   @id @default(uuid())
+  name      String
+  type      GateType @default(BOTH)
+  branchId  String   @map("branch_id")
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  
+  entriesIn  VehicleEntry[] @relation("CheckInGate")
+  entriesOut VehicleEntry[] @relation("CheckOutGate")
+  devices    Device[]
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("gates")
+}
+
+model Device {
+  id             String   @id @default(uuid())
+  deviceId       String   @unique @map("device_id")
+  name           String?
+  branchId       String   @map("branch_id")
+  branch         Branch   @relation(fields: [branchId], references: [id])
+  gateId         String   @map("gate_id")
+  gate           Gate     @relation(fields: [gateId], references: [id])
+  organizationId String   @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  
+  entries        VehicleEntry[]
+  lastActive     DateTime? @map("last_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("devices")
+}
+
+model VehicleEntry {
+  id               String      @id @default(uuid())
+  plateNumber      String      @map("plate_number")
+  phoneNumber      String?     @map("phone_number")
+  notes            String?
+  status           EntryStatus @default(IN)
+  
+  checkInTime      DateTime    @default(now()) @map("check_in_time")
+  checkOutTime     DateTime?   @map("check_out_time")
+  
+  checkInStaffId   String      @map("check_in_staff_id")
+  checkInStaff     User        @relation("CheckInStaff", fields: [checkInStaffId], references: [id])
+  checkOutStaffId  String?     @map("check_out_staff_id")
+  checkOutStaff    User?       @relation("CheckOutStaff", fields: [checkOutStaffId], references: [id])
+  
+  branchId         String      @map("branch_id")
+  branch           Branch      @relation(fields: [branchId], references: [id])
+  
+  checkInGateId    String      @map("check_in_gate_id")
+  checkInGate      Gate        @relation("CheckInGate", fields: [checkInGateId], references: [id])
+  checkOutGateId   String?     @map("check_out_gate_id")
+  checkOutGate     Gate?       @relation("CheckOutGate", fields: [checkOutGateId], references: [id])
+  
+  deviceId         String?     @map("device_id")
+  device           Device?     @relation(fields: [deviceId], references: [id])
+  
+  organizationId   String      @map("organization_id")
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  
+  imagePath        String?     @map("image_path")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  @@map("vehicle_entries")
+}
+
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  passwordHash     String   @map("password_hash")
-  role             Role     @default(guard)
-  refreshTokenHash String?  @map("refresh_token_hash")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id               String        @id @default(uuid())
+  email            String        @unique
+  passwordHash     String        @map("password_hash")
+  role             Role          @default(guard)
+  refreshTokenHash String?       @map("refresh_token_hash")
+  
+  organizationId   String?       @map("organization_id")
+  organization     Organization? @relation(fields: [organizationId], references: [id])
+  
+  branchId         String?       @map("branch_id")
+  branch           Branch?       @relation(fields: [branchId], references: [id])
+  
+  entriesIn        VehicleEntry[] @relation("CheckInStaff")
+  entriesOut       VehicleEntry[] @relation("CheckOutStaff")
+  
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
 
   @@map("users")
 }

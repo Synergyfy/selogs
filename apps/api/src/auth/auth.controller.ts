@@ -7,13 +7,20 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { SignupDto, LoginDto } from './dto';
+import { SignupDto, LoginDto, AuthResponseDto } from './dto';
 import { GetCurrentUser, GetCurrentUserId, Public } from './decorators';
 import { RtGuard } from './guards';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -24,7 +31,15 @@ export class AuthController {
   @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
-  async signup(@Body() dto: SignupDto, @Res({ passthrough: true }) res: Response) {
+  @ApiOperation({
+    summary: 'Register a new user',
+    description: 'Creates a new user account. For Admins, it also creates an organization. Super Admins require a secret code.',
+  })
+  @ApiResponse({ status: 201, description: 'User registered successfully.', type: AuthResponseDto })
+  @ApiResponse({ status: 400, description: 'Validation failed or missing organization name for admin.' })
+  @ApiResponse({ status: 403, description: 'Invalid Super Admin secret code.' })
+  @ApiResponse({ status: 409, description: 'User already exists.' })
+  async signup(@Body() dto: SignupDto, @Res({ passthrough: true }) res: Response): Promise<AuthResponseDto> {
     const tokens = await this.authService.signup(dto);
     this.setRefreshTokenCookie(res, tokens.refresh_token);
     return { access_token: tokens.access_token };
@@ -36,7 +51,14 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  @ApiOperation({
+    summary: 'Login to the application',
+    description: 'Authenticates a user and returns an access token. Sets a refresh token in an HTTP-only cookie.',
+  })
+  @ApiResponse({ status: 200, description: 'Login successful.', type: AuthResponseDto })
+  @ApiResponse({ status: 401, description: 'Invalid email or password.' })
+  @ApiResponse({ status: 403, description: 'Access denied.' })
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response): Promise<AuthResponseDto> {
     const tokens = await this.authService.login(dto);
     this.setRefreshTokenCookie(res, tokens.refresh_token);
     return { access_token: tokens.access_token };
@@ -47,6 +69,13 @@ export class AuthController {
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Logout from the application',
+    description: 'Invalidates the user session and clears the refresh token cookie.',
+  })
+  @ApiResponse({ status: 200, description: 'Logged out successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async logout(
     @GetCurrentUserId() userId: string,
     @Res({ passthrough: true }) res: Response,
@@ -63,11 +92,18 @@ export class AuthController {
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'Issues a new access token and rotates the refresh token using the current refresh token cookie.',
+  })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully.', type: AuthResponseDto })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token.' })
+  @ApiResponse({ status: 403, description: 'Access denied.' })
   async refresh(
     @GetCurrentUserId() userId: string,
     @GetCurrentUser('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<AuthResponseDto> {
     const tokens = await this.authService.refreshTokens(userId, refreshToken);
     this.setRefreshTokenCookie(res, tokens.refresh_token);
     return { access_token: tokens.access_token };
