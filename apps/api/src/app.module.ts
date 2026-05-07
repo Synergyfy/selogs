@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './auth/guards';
 import { BranchesModule } from './branches/branches.module';
 import { EntriesModule } from './entries/entries.module';
+import { StaffModule } from './staff/staff.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EntriesModule } from './entries/entries.module';
     AuthModule,
     BranchesModule,
     EntriesModule,
+    StaffModule,
   ],
   controllers: [AppController],
   providers: [
