@@ -33,13 +33,24 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Creates a new user account. For Admins, it also creates an organization. Super Admins require a secret code.',
+    description:
+      'Creates a new user account. For Admins, it also creates an organization. Super Admins require a secret code.',
   })
-  @ApiResponse({ status: 201, description: 'User registered successfully.', type: AuthResponseDto })
-  @ApiResponse({ status: 400, description: 'Validation failed or missing organization name for admin.' })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully.',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed or missing organization name for admin.',
+  })
   @ApiResponse({ status: 403, description: 'Invalid Super Admin secret code.' })
   @ApiResponse({ status: 409, description: 'User already exists.' })
-  async signup(@Body() dto: SignupDto, @Res({ passthrough: true }) res: Response): Promise<AuthResponseDto> {
+  async signup(
+    @Body() dto: SignupDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseDto> {
     const tokens = await this.authService.signup(dto);
     this.setRefreshTokenCookie(res, tokens.refresh_token);
     return { access_token: tokens.access_token };
@@ -53,12 +64,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login to the application',
-    description: 'Authenticates a user and returns an access token. Sets a refresh token in an HTTP-only cookie.',
+    description:
+      'Authenticates a user and returns an access token. Sets a refresh token in an HTTP-only cookie.',
   })
-  @ApiResponse({ status: 200, description: 'Login successful.', type: AuthResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful.',
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Invalid email or password.' })
   @ApiResponse({ status: 403, description: 'Access denied.' })
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response): Promise<AuthResponseDto> {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseDto> {
     const tokens = await this.authService.login(dto);
     this.setRefreshTokenCookie(res, tokens.refresh_token);
     return { access_token: tokens.access_token };
@@ -72,7 +91,8 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Logout from the application',
-    description: 'Invalidates the user session and clears the refresh token cookie.',
+    description:
+      'Invalidates the user session and clears the refresh token cookie.',
   })
   @ApiResponse({ status: 200, description: 'Logged out successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -94,10 +114,18 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Refresh access token',
-    description: 'Issues a new access token and rotates the refresh token using the current refresh token cookie.',
+    description:
+      'Issues a new access token and rotates the refresh token using the current refresh token cookie.',
   })
-  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully.', type: AuthResponseDto })
-  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens refreshed successfully.',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token.',
+  })
   @ApiResponse({ status: 403, description: 'Access denied.' })
   async refresh(
     @GetCurrentUserId() userId: string,

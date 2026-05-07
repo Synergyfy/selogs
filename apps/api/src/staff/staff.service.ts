@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,7 +23,10 @@ export class StaffService {
   /**
    * Create a new staff member (Admin only).
    */
-  async create(dto: CreateStaffDto, organizationId: string): Promise<StaffResponseDto> {
+  async create(
+    dto: CreateStaffDto,
+    organizationId: string,
+  ): Promise<StaffResponseDto> {
     // 1. Check if email exists
     const existingEmail = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -69,9 +78,9 @@ export class StaffService {
    */
   async findAll(organizationId: string): Promise<StaffResponseDto[]> {
     const users = await this.prisma.user.findMany({
-      where: { 
+      where: {
         organizationId,
-        role: { in: [Role.supervisor, Role.guard] }
+        role: { in: [Role.supervisor, Role.guard] },
       },
       include: {
         branch: true,
@@ -94,10 +103,13 @@ export class StaffService {
   /**
    * Start a shift (Check-In).
    */
-  async checkIn(dto: StaffCheckInDto, organizationId: string): Promise<ShiftResponseDto> {
+  async checkIn(
+    dto: StaffCheckInDto,
+    organizationId: string,
+  ): Promise<ShiftResponseDto> {
     // 1. Find user by staffId
     const user = await this.prisma.user.findFirst({
-      where: { 
+      where: {
         staffId: dto.staffId,
         organizationId,
       },
@@ -121,9 +133,9 @@ export class StaffService {
 
     // 3. Get gate and branch
     const gate = await this.prisma.gate.findFirst({
-      where: { 
+      where: {
         id: dto.gateId,
-        branch: { organizationId }
+        branch: { organizationId },
       },
       include: { branch: true },
     });
@@ -146,19 +158,18 @@ export class StaffService {
       data: {
         userId: user.id,
         branchId: gate.branchId,
-        gateId: gate.id, // Wait, I didn't add gateId to Shift model!
         deviceId,
         organizationId,
-      } as any, // Adding gateId if I update schema, but let's check
+      },
       include: {
         user: true,
         branch: true,
         device: true,
       },
     });
-    
-    // Actually, I didn't add gateId to Shift in schema. 
-    // It's not strictly necessary if we have deviceId or just branchId, 
+
+    // Actually, I didn't add gateId to Shift in schema.
+    // It's not strictly necessary if we have deviceId or just branchId,
     // but good for tracking. I'll stick to what's in schema for now.
 
     return {
@@ -174,7 +185,10 @@ export class StaffService {
   /**
    * End a shift (Check-Out).
    */
-  async checkOut(staffId: string, organizationId: string): Promise<ShiftResponseDto> {
+  async checkOut(
+    staffId: string,
+    organizationId: string,
+  ): Promise<ShiftResponseDto> {
     const user = await this.prisma.user.findFirst({
       where: { staffId, organizationId },
     });

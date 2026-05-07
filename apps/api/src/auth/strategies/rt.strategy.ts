@@ -16,7 +16,6 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
       secretOrKey: config.get<string>('REFRESH_TOKEN_SECRET')!,
       passReqToCallback: true,
     });
-
   }
 
   validate(req: Request, payload: any) {

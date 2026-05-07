@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -27,7 +32,13 @@ export class AuthService {
   /**
    * Generates Access and Refresh tokens for a user.
    */
-  async getTokens(userId: string, email: string, role: string, organizationId?: string | null, branchId?: string | null) {
+  async getTokens(
+    userId: string,
+    email: string,
+    role: string,
+    organizationId?: string | null,
+    branchId?: string | null,
+  ) {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         {
@@ -100,14 +111,16 @@ export class AuthService {
     let organizationId: string | undefined;
     if (dto.role === Role.admin) {
       if (!dto.organizationName) {
-        throw new BadRequestException('Organization name is required for admin signup');
+        throw new BadRequestException(
+          'Organization name is required for admin signup',
+        );
       }
-      
+
       // Generate a unique 6-character code for the organization
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
+
       const organization = await this.prisma.organization.create({
-        data: { 
+        data: {
           name: dto.organizationName,
           code,
         },
@@ -127,11 +140,11 @@ export class AuthService {
     });
 
     const tokens = await this.getTokens(
-      newUser.id, 
-      newUser.email, 
-      newUser.role, 
+      newUser.id,
+      newUser.email,
+      newUser.role,
       newUser.organizationId,
-      newUser.branchId
+      newUser.branchId,
     );
     await this.updateRtHash(newUser.id, tokens.refresh_token);
     return tokens;
@@ -149,15 +162,18 @@ export class AuthService {
 
     if (!user) throw new ForbiddenException('Access Denied');
 
-    const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
+    const passwordMatches = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
     if (!passwordMatches) throw new ForbiddenException('Access Denied');
 
     const tokens = await this.getTokens(
-      user.id, 
-      user.email, 
-      user.role, 
+      user.id,
+      user.email,
+      user.role,
       user.organizationId,
-      user.branchId
+      user.branchId,
     );
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
@@ -190,17 +206,18 @@ export class AuthService {
       },
     });
 
-    if (!user || !user.refreshTokenHash) throw new ForbiddenException('Access Denied');
+    if (!user || !user.refreshTokenHash)
+      throw new ForbiddenException('Access Denied');
 
     const rtMatches = await bcrypt.compare(rt, user.refreshTokenHash);
     if (!rtMatches) throw new ForbiddenException('Access Denied');
 
     const tokens = await this.getTokens(
-      user.id, 
-      user.email, 
-      user.role, 
+      user.id,
+      user.email,
+      user.role,
       user.organizationId,
-      user.branchId
+      user.branchId,
     );
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;

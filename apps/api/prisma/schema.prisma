@@ -40,6 +40,9 @@ model Organization {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   
+  planId    String?  @map("plan_id")
+  plan      Plan?    @relation(fields: [planId], references: [id])
+
   users     User[]
   branches  Branch[]
   entries   VehicleEntry[]
@@ -48,6 +51,38 @@ model Organization {
 
   @@map("organizations")
 }
+
+
+
+model Plan {
+  id                String   @id @default(uuid())
+  name              String   @unique
+  description       String?
+  monthlyPrice      Float    @map("monthly_price")
+  quarterlyPrice    Float?   @map("quarterly_price")
+  yearlyPrice       Float?   @map("yearly_price")
+  quarterlyDiscount Float    @default(0) @map("quarterly_discount")
+  yearlyDiscount    Float    @default(0) @map("yearly_discount")
+  
+  branchLimit       Int      @default(1) @map("branch_limit")
+  staffLimit        Int      @default(5) @map("staff_limit")
+  deviceLimit       Int      @default(2) @map("device_limit")
+  
+  hasOcr            Boolean  @default(false) @map("has_ocr")
+  hasAnalytics      Boolean  @default(false) @map("has_analytics")
+  hasExport         Boolean  @default(false) @map("has_export")
+  
+  customFeatures    String[] @map("custom_features")
+  
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organizations     Organization[]
+
+  @@map("plans")
+}
+
 
 model Branch {
   id             String   @id @default(uuid())

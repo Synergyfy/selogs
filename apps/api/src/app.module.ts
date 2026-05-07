@@ -10,6 +10,9 @@ import { AtGuard } from './auth/guards';
 import { BranchesModule } from './branches/branches.module';
 import { EntriesModule } from './entries/entries.module';
 import { StaffModule } from './staff/staff.module';
+import { DevicesModule } from './devices/devices.module';
+import { PlansModule } from './plans/plans.module';
+import { PaystackModule } from './paystack/paystack.module';
 
 @Module({
   imports: [
@@ -22,6 +25,7 @@ import { StaffModule } from './staff/staff.module';
         REFRESH_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_EXPIRES_IN: Joi.string().required(),
         SUPER_ADMIN_SECRET: Joi.string().required(),
+        PAYSTACK_SECRET_KEY: Joi.string().required(),
         PORT: Joi.number().default(5001),
       }),
     }),
@@ -30,6 +34,9 @@ import { StaffModule } from './staff/staff.module';
     BranchesModule,
     EntriesModule,
     StaffModule,
+    DevicesModule,
+    PlansModule,
+    PaystackModule,
   ],
   controllers: [AppController],
   providers: [
@@ -41,5 +48,3 @@ import { StaffModule } from './staff/staff.module';
   ],
 })
 export class AppModule {}
-
-

@@ -19,7 +19,8 @@ export class CreateBranchDto {
   address?: string;
 
   @ApiPropertyOptional({
-    description: 'Unique branch code for device connection. Auto-generated if not provided.',
+    description:
+      'Unique branch code for device connection. Auto-generated if not provided.',
     example: 'BR-LAG-001',
   })
   @IsString()

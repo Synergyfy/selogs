@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MinLength,
+} from 'class-validator';
 import { Role } from '@prisma/client';
 
 export class CreateStaffDto {
@@ -17,7 +25,10 @@ export class CreateStaffDto {
   @IsNotEmpty()
   fullName!: string;
 
-  @ApiProperty({ example: 'S12345', description: 'Unique alphanumeric staff ID' })
+  @ApiProperty({
+    example: 'S12345',
+    description: 'Unique alphanumeric staff ID',
+  })
   @IsString()
   @IsNotEmpty()
   staffId!: string;

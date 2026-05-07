@@ -39,7 +39,8 @@ export class EntriesController {
 
   @ApiOperation({
     summary: 'List and filter vehicle entries',
-    description: 'Returns paginated list of entries. Scoped to organization and branch based on user role.',
+    description:
+      'Returns paginated list of entries. Scoped to organization and branch based on user role.',
   })
   @ApiResponse({ status: 200, type: PaginatedEntriesResponseDto })
   @Get()

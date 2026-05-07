@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { EntryStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -39,17 +44,17 @@ export class EntriesService {
     const where: any = { organizationId };
 
     // Role-based scoping: Supervisors and Guards only see their assigned branch by default
-    if ((userRole === Role.supervisor || userRole === Role.guard) && userBranchId) {
+    if (
+      (userRole === Role.supervisor || userRole === Role.guard) &&
+      userBranchId
+    ) {
       where.branchId = userBranchId;
     } else if (branchId) {
       where.branchId = branchId;
     }
 
     if (staffId) {
-      where.OR = [
-        { checkInStaffId: staffId },
-        { checkOutStaffId: staffId },
-      ];
+      where.OR = [{ checkInStaffId: staffId }, { checkOutStaffId: staffId }];
     }
 
     if (plateNumber) {
@@ -155,11 +160,11 @@ export class EntriesService {
   ): Promise<EntryResponseDto> {
     // 1. Get gate and verify it belongs to the organization
     const gate = await this.prisma.gate.findFirst({
-      where: { 
+      where: {
         id: dto.gateId,
         branch: {
-          organizationId
-        }
+          organizationId,
+        },
       },
     });
 
@@ -177,7 +182,9 @@ export class EntriesService {
     });
 
     if (existingActive) {
-      throw new ConflictException(`Vehicle ${dto.plateNumber} is already inside`);
+      throw new ConflictException(
+        `Vehicle ${dto.plateNumber} is already inside`,
+      );
     }
 
     // 3. Resolve Device ID if provided
@@ -245,11 +252,11 @@ export class EntriesService {
     }
 
     const gate = await this.prisma.gate.findFirst({
-      where: { 
+      where: {
         id: dto.gateId,
         branch: {
-          organizationId
-        }
+          organizationId,
+        },
       },
     });
 

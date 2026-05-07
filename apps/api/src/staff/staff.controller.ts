@@ -73,6 +73,7 @@ export class StaffController {
   @ApiParam({ name: 'staffId', example: 'S12345' })
   @ApiResponse({ status: 200, type: ShiftResponseDto })
   @Post('checkout/:staffId')
+  @HttpCode(HttpStatus.OK)
   async checkOut(
     @Param('staffId') staffId: string,
     @GetCurrentUser('organizationId') organizationId: string,

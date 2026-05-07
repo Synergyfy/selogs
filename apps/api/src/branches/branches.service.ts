@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateBranchDto, UpdateBranchDto, BranchResponseDto } from './dto/branch.dto';
+import {
+  CreateBranchDto,
+  UpdateBranchDto,
+  BranchResponseDto,
+} from './dto/branch.dto';
 
 @Injectable()
 export class BranchesService {
@@ -19,7 +27,10 @@ export class BranchesService {
   /**
    * Get a single branch by ID.
    */
-  async findOne(id: string, organizationId: string): Promise<BranchResponseDto> {
+  async findOne(
+    id: string,
+    organizationId: string,
+  ): Promise<BranchResponseDto> {
     const branch = await this.prisma.branch.findFirst({
       where: { id, organizationId },
     });
@@ -34,7 +45,10 @@ export class BranchesService {
   /**
    * Create a new branch.
    */
-  async create(dto: CreateBranchDto, organizationId: string): Promise<BranchResponseDto> {
+  async create(
+    dto: CreateBranchDto,
+    organizationId: string,
+  ): Promise<BranchResponseDto> {
     let code = dto.code;
 
     if (!code) {
@@ -51,13 +65,15 @@ export class BranchesService {
         throw new ConflictException(`Branch code ${dto.code} already exists`);
       }
       // If auto-generated code exists (unlikely), try again or just throw for simplicity now
-      throw new ConflictException(`Generated branch code conflict. Please try again.`);
+      throw new ConflictException(
+        `Generated branch code conflict. Please try again.`,
+      );
     }
 
     return this.prisma.branch.create({
       data: {
         ...dto,
-        code: code!,
+        code: code,
         organizationId,
       },
     });
@@ -66,7 +82,11 @@ export class BranchesService {
   /**
    * Update a branch.
    */
-  async update(id: string, dto: UpdateBranchDto, organizationId: string): Promise<BranchResponseDto> {
+  async update(
+    id: string,
+    dto: UpdateBranchDto,
+    organizationId: string,
+  ): Promise<BranchResponseDto> {
     await this.findOne(id, organizationId);
 
     return this.prisma.branch.update({

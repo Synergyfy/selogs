@@ -19,7 +19,11 @@ import {
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { BranchesService } from './branches.service';
-import { CreateBranchDto, UpdateBranchDto, BranchResponseDto } from './dto/branch.dto';
+import {
+  CreateBranchDto,
+  UpdateBranchDto,
+  BranchResponseDto,
+} from './dto/branch.dto';
 import { Roles } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 import { GetCurrentUser } from '../auth/decorators';
@@ -33,12 +37,15 @@ export class BranchesController {
 
   @ApiOperation({
     summary: 'List all branches',
-    description: 'Returns all branches belonging to the authenticated user\'s organization.',
+    description:
+      "Returns all branches belonging to the authenticated user's organization.",
   })
   @ApiResponse({ status: 200, type: [BranchResponseDto] })
   @Roles(Role.admin, Role.supervisor)
   @Get()
-  async findAll(@GetCurrentUser('organizationId') organizationId: string): Promise<BranchResponseDto[]> {
+  async findAll(
+    @GetCurrentUser('organizationId') organizationId: string,
+  ): Promise<BranchResponseDto[]> {
     return this.branchesService.findAll(organizationId);
   }
 
@@ -76,7 +83,8 @@ export class BranchesController {
 
   @ApiOperation({
     summary: 'Update a branch',
-    description: 'Updates branch details. Only accessible by organization admins.',
+    description:
+      'Updates branch details. Only accessible by organization admins.',
   })
   @ApiParam({ name: 'id', example: 'a3f2c1d0-4e5b-6789-abcd-ef0123456789' })
   @ApiResponse({ status: 200, type: BranchResponseDto })
@@ -92,7 +100,8 @@ export class BranchesController {
 
   @ApiOperation({
     summary: 'Delete a branch',
-    description: 'Removes a branch from the organization. Only accessible by organization admins.',
+    description:
+      'Removes a branch from the organization. Only accessible by organization admins.',
   })
   @ApiParam({ name: 'id', example: 'a3f2c1d0-4e5b-6789-abcd-ef0123456789' })
   @ApiResponse({ status: 204, description: 'Branch deleted successfully.' })
