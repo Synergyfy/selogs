@@ -13,6 +13,8 @@ import { StaffModule } from './staff/staff.module';
 import { DevicesModule } from './devices/devices.module';
 import { PlansModule } from './plans/plans.module';
 import { PaystackModule } from './paystack/paystack.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { BillingModule } from './billing/billing.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { PaystackModule } from './paystack/paystack.module';
     DevicesModule,
     PlansModule,
     PaystackModule,
+    SubscriptionsModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -32,6 +32,14 @@ enum EntryStatus {
   OUT
 }
 
+enum SubscriptionStatus {
+  active
+  trialing
+  past_due
+  canceled
+  unpaid
+}
+
 model Organization {
   id        String   @id @default(uuid())
   name      String
@@ -42,14 +50,62 @@ model Organization {
   
   planId    String?  @map("plan_id")
   plan      Plan?    @relation(fields: [planId], references: [id])
+  
+  logo           String?
+  primaryColor   String?  @default("#3B82F6") @map("primary_color")
+  secondaryColor String?  @default("#1E293B") @map("secondary_color")
 
-  users     User[]
-  branches  Branch[]
-  entries   VehicleEntry[]
-  devices   Device[]
-  shifts    Shift[]
+  users          User[]
+  branches       Branch[]
+  entries        VehicleEntry[]
+  devices        Device[]
+  shifts         Shift[]
+  subscription   Subscription?
+  invoices       Invoice[]
 
   @@map("organizations")
+}
+
+model Subscription {
+  id                String             @id @default(uuid())
+  organizationId    String             @unique @map("organization_id")
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  
+  planId            String             @map("plan_id")
+  plan              Plan               @relation(fields: [planId], references: [id])
+  
+  status            SubscriptionStatus @default(active)
+  startDate         DateTime           @default(now()) @map("start_date")
+  endDate           DateTime?          @map("end_date")
+  nextBillingDate   DateTime?          @map("next_billing_date")
+  
+  paystackSubscriptionCode String?     @unique @map("paystack_subscription_code")
+  paystackEmailToken      String?     @map("paystack_email_token")
+  
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id                String    @id @default(uuid())
+  organizationId    String    @map("organization_id")
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  
+  amount            Float
+  currency          String    @default("NGN")
+  status            String    // paid, pending, failed
+  paymentMethod     String?   @map("payment_method") // e.g., Visa **** 4242
+  
+  paystackReference String    @unique @map("paystack_reference")
+  paidAt            DateTime? @map("paid_at")
+  
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@map("invoices")
 }
 
 
@@ -79,6 +135,7 @@ model Plan {
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   organizations     Organization[]
+  subscriptions     Subscription[]
 
   @@map("plans")
 }
