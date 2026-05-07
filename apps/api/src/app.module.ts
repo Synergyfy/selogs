@@ -15,6 +15,8 @@ import { PlansModule } from './plans/plans.module';
 import { PaystackModule } from './paystack/paystack.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { BillingModule } from './billing/billing.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { BillingModule } from './billing/billing.module';
     PaystackModule,
     SubscriptionsModule,
     BillingModule,
+    AnalyticsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

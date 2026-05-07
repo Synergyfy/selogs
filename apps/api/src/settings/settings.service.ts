@@ -1,0 +1,87 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { UpdateBrandingDto } from './dto/branding.dto';
+import { UpdateProfileDto } from './dto/profile.dto';
+
+@Injectable()
+export class SettingsService {
+  constructor(private prisma: PrismaService) {}
+
+  /**
+   * Get organization branding settings.
+   */
+  async getBranding(organizationId: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        logo: true,
+        primaryColor: true,
+        secondaryColor: true,
+      },
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    return org;
+  }
+
+  /**
+   * Update organization branding settings.
+   */
+  async updateBranding(organizationId: string, dto: UpdateBrandingDto) {
+    return this.prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        logo: dto.logo,
+        primaryColor: dto.primaryColor,
+        secondaryColor: dto.secondaryColor,
+      },
+      select: {
+        logo: true,
+        primaryColor: true,
+        secondaryColor: true,
+      },
+    });
+  }
+
+  /**
+   * Get organization profile settings.
+   */
+  async getProfile(organizationId: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        name: true,
+        industry: true,
+        code: true,
+        createdAt: true,
+      },
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    return org;
+  }
+
+  /**
+   * Update organization profile settings.
+   */
+  async updateProfile(organizationId: string, dto: UpdateProfileDto) {
+    return this.prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        name: dto.name,
+        industry: dto.industry,
+      },
+      select: {
+        name: true,
+        industry: true,
+        code: true,
+      },
+    });
+  }
+}
