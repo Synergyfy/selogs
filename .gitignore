@@ -1,5 +1,61 @@
+# ============================================================
+# Dependencies
+# ============================================================
+node_modules/
+.pnp
+.pnp.js
+
+# ============================================================
+# Build outputs
+# ============================================================
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+
+# Vite
+dev-dist/
+
+# NestJS incremental build cache
+*.tsbuildinfo
+
+# ============================================================
+# Turborepo
+# ============================================================
+.turbo/
+
+# ============================================================
+# Environment variables — NEVER commit secrets
+# ============================================================
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ============================================================
+# Prisma
+# ============================================================
+# Generated client — regenerated via `prisma generate`
+apps/api/node_modules/.prisma/
+# SQLite dev databases (if used locally instead of Postgres)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# ============================================================
+# Testing & Coverage
+# ============================================================
+coverage/
+.nyc_output/
+*.lcov
+
+# ============================================================
 # Logs
-logs
+# ============================================================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,18 +63,63 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# ============================================================
+# Capacitor / Mobile
+# ============================================================
+# Android
+apps/web/android/.gradle/
+apps/web/android/build/
+apps/web/android/app/build/
+apps/web/android/local.properties
+apps/web/android/.idea/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# iOS
+apps/web/ios/App/Pods/
+apps/web/ios/App/App.xcworkspace/xcuserdata/
+apps/web/ios/App/build/
+*.xcuserstate
+*.xcworkspace/xcuserdata
+
+# ============================================================
+# PWA / Workbox
+# ============================================================
+# Generated service worker files
+apps/web/public/sw.js
+apps/web/public/workbox-*.js
+apps/web/public/sw.js.map
+apps/web/public/workbox-*.js.map
+
+# ============================================================
+# OS generated files
+# ============================================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ============================================================
+# Editors & IDEs
+# ============================================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+
+# ============================================================
+# Misc
+# ============================================================
+# pnpm store (if configured locally)
+.pnpm-store/
+
+# TypeScript diagnostics
+tsconfig.tsbuildinfo
