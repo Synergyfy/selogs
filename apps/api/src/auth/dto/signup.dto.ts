@@ -38,6 +38,14 @@ export class SignupDto {
   role!: Role;
 
   @ApiPropertyOptional({
+    description: 'User full name',
+    example: 'John Doe',
+  })
+  @IsString()
+  @IsOptional()
+  fullName?: string;
+
+  @ApiPropertyOptional({
     description: 'Name of the organization (required if role is admin)',
     example: 'VGuard Security',
   })
@@ -52,4 +60,28 @@ export class SignupDto {
   @IsString()
   @IsOptional()
   superAdminSecret?: string;
+
+  @ApiPropertyOptional({
+    description: 'User phone number',
+    example: '+2348012345678',
+  })
+  @IsString()
+  @IsOptional()
+  phoneNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'Industry or organization type',
+    example: 'Hotel Security',
+  })
+  @IsString()
+  @IsOptional()
+  organizationType?: string;
+
+  @ApiPropertyOptional({
+    description: 'Name of the main location (creates the first branch)',
+    example: 'Main Gate',
+  })
+  @IsString()
+  @IsOptional()
+  mainLocation?: string;
 }

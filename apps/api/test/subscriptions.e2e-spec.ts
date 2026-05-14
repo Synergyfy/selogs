@@ -40,7 +40,7 @@ describe('Subscriptions (e2e)', () => {
     const user = await prisma.user.findUnique({
       where: { email: 'test-billing-admin@example.com' },
     });
-    organizationId = user.organizationId;
+    organizationId = user?.organizationId as string;
   });
 
   afterAll(async () => {

@@ -9,7 +9,7 @@ describe('SubscriptionsService', () => {
   let service: SubscriptionsService;
   let prisma: PrismaService;
 
-  const mockPrisma = {
+  const mockPrisma: any = {
     organization: {
       findUnique: jest.fn(),
     },
@@ -28,7 +28,7 @@ describe('SubscriptionsService', () => {
     invoice: {
       create: jest.fn(),
     },
-    $transaction: jest.fn((cb) => cb(mockPrisma)),
+    $transaction: jest.fn((cb: any) => cb(mockPrisma)),
   };
 
   const mockPaystack = {

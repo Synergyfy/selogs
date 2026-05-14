@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { EntryStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -158,19 +159,23 @@ export class EntriesService {
     organizationId: string,
     staffId: string,
   ): Promise<EntryResponseDto> {
-    // 1. Get gate and verify it belongs to the organization
-    const gate = await this.prisma.gate.findFirst({
-      where: {
-        id: dto.gateId,
-        branch: {
-          organizationId,
-        },
-      },
+    // 1. Resolve Device and verify ownership
+    const device = await this.prisma.device.findFirst({
+      where: { deviceId: dto.deviceId, organizationId },
     });
 
-    if (!gate) {
-      throw new NotFoundException('Gate not found or access denied');
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${dto.deviceId} not found`);
     }
+
+    if (!device.gateId) {
+      throw new BadRequestException(
+        `Device ${dto.deviceId} is not assigned to a gate.`,
+      );
+    }
+
+    const gateId = device.gateId;
+    const branchId = device.branchId;
 
     // 2. Duplicate Protection: Check if vehicle is already inside this organization
     const existingActive = await this.prisma.vehicleEntry.findFirst({
@@ -187,15 +192,6 @@ export class EntriesService {
       );
     }
 
-    // 3. Resolve Device ID if provided
-    let deviceId: string | undefined;
-    if (dto.deviceId) {
-      const device = await this.prisma.device.findUnique({
-        where: { deviceId: dto.deviceId },
-      });
-      if (device) deviceId = device.id;
-    }
-
     // 4. Create Entry
     const entry = await this.prisma.vehicleEntry.create({
       data: {
@@ -204,10 +200,10 @@ export class EntriesService {
         notes: dto.notes,
         status: EntryStatus.IN,
         organizationId,
-        branchId: gate.branchId,
-        checkInGateId: gate.id,
+        branchId: branchId,
+        checkInGateId: gateId,
         checkInStaffId: staffId,
-        deviceId,
+        deviceId: device.id,
       },
       include: {
         branch: true,
@@ -251,18 +247,22 @@ export class EntriesService {
       throw new ConflictException('Vehicle has already checked out');
     }
 
-    const gate = await this.prisma.gate.findFirst({
-      where: {
-        id: dto.gateId,
-        branch: {
-          organizationId,
-        },
-      },
+    // Resolve Device and get assigned gate
+    const device = await this.prisma.device.findFirst({
+      where: { deviceId: dto.deviceId, organizationId },
     });
 
-    if (!gate) {
-      throw new NotFoundException('Gate not found or access denied');
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${dto.deviceId} not found`);
     }
+
+    if (!device.gateId) {
+      throw new BadRequestException(
+        `Device ${dto.deviceId} is not assigned to a gate.`,
+      );
+    }
+
+    const gateId = device.gateId;
 
     const updated = await this.prisma.vehicleEntry.update({
       where: { id },
@@ -270,7 +270,7 @@ export class EntriesService {
         status: EntryStatus.OUT,
         checkOutTime: new Date(),
         checkOutStaffId: staffId,
-        checkOutGateId: gate.id,
+        checkOutGateId: gateId,
       },
       include: {
         branch: true,

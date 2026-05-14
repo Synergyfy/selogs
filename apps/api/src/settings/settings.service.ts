@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateBrandingDto } from './dto/branding.dto';
 import { UpdateProfileDto } from './dto/profile.dto';
+import { UpdateSystemSettingsDto } from './dto/system.dto';
 
 @Injectable()
 export class SettingsService {
@@ -81,6 +82,45 @@ export class SettingsService {
         name: true,
         industry: true,
         code: true,
+      },
+    });
+  }
+
+  /**
+   * Get organization system settings.
+   */
+  async getSystemSettings(organizationId: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        enableNotes: true,
+        enablePhoneNumber: true,
+        ocrEnabled: true,
+      },
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    return org;
+  }
+
+  /**
+   * Update organization system settings.
+   */
+  async updateSystemSettings(organizationId: string, dto: UpdateSystemSettingsDto) {
+    return this.prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        enableNotes: dto.enableNotes,
+        enablePhoneNumber: dto.enablePhoneNumber,
+        ocrEnabled: dto.ocrEnabled,
+      },
+      select: {
+        enableNotes: true,
+        enablePhoneNumber: true,
+        ocrEnabled: true,
       },
     });
   }

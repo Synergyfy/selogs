@@ -25,22 +25,27 @@ export class CreateEntryDto {
   @IsOptional()
   notes?: string;
 
-  @ApiProperty({ description: 'Gate ID where entry is captured' })
+  @ApiPropertyOptional({ description: 'Gate ID where entry is captured' })
   @IsUUID()
-  @IsNotEmpty()
-  gateId!: string;
-
-  @ApiPropertyOptional({ description: 'Hardware Device ID' })
-  @IsString()
   @IsOptional()
-  deviceId?: string;
+  gateId?: string;
+
+  @ApiProperty({ description: 'Hardware Device ID' })
+  @IsString()
+  @IsNotEmpty()
+  deviceId!: string;
 }
 
 export class CheckoutEntryDto {
-  @ApiProperty({ description: 'Gate ID where exit is captured' })
+  @ApiPropertyOptional({ description: 'Gate ID where exit is captured' })
   @IsUUID()
+  @IsOptional()
+  gateId?: string;
+
+  @ApiProperty({ description: 'Hardware Device ID' })
+  @IsString()
   @IsNotEmpty()
-  gateId!: string;
+  deviceId!: string;
 }
 
 export class EntriesQueryDto {

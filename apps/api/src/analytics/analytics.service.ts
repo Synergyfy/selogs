@@ -18,7 +18,7 @@ export class AnalyticsService {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
-    const [todayEntries, activeVehicles] = await Promise.all([
+    const [todayEntries, activeVehicles, activeStaff, activeDevices, activeBranches, org] = await Promise.all([
       this.prisma.vehicleEntry.count({
         where: {
           organizationId,
@@ -30,6 +30,22 @@ export class AnalyticsService {
           organizationId,
           status: EntryStatus.IN,
         },
+      }),
+      this.prisma.shift.count({
+        where: {
+          organizationId,
+          endTime: null,
+        },
+      }),
+      this.prisma.device.count({
+        where: { organizationId },
+      }),
+      this.prisma.branch.count({
+        where: { organizationId },
+      }),
+      this.prisma.organization.findUnique({
+        where: { id: organizationId },
+        include: { subscription: true },
       }),
     ]);
 
@@ -50,6 +66,10 @@ export class AnalyticsService {
       todayEntries,
       activeVehicles,
       peakHour,
+      activeStaff,
+      activeDevices,
+      activeBranches,
+      subscriptionStatus: org?.subscription?.status || 'inactive',
     };
   }
 

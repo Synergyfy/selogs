@@ -46,6 +46,15 @@ describe('EntriesController (e2e)', () => {
       data: { name: 'Entry Gate', branchId: branch.id },
     });
     gateId = gate.id;
+
+    await prisma.device.create({
+      data: {
+        deviceId: 'DEV-ENTRY-1',
+        organizationId: orgId,
+        branchId: branch.id,
+        gateId: gate.id,
+      },
+    });
   });
 
   afterAll(async () => {
@@ -67,7 +76,7 @@ describe('EntriesController (e2e)', () => {
         .send({
           plateNumber: 'ABC-123',
           phoneNumber: '08012345678',
-          gateId,
+          deviceId: 'DEV-ENTRY-1',
         })
         .expect(201)
         .then((res) => {
@@ -82,7 +91,7 @@ describe('EntriesController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           plateNumber: 'ABC-123',
-          gateId,
+          deviceId: 'DEV-ENTRY-1',
         })
         .expect(409);
     });
@@ -98,7 +107,7 @@ describe('EntriesController (e2e)', () => {
       return request(app.getHttpServer())
         .patch(`/entries/${entryId}/checkout`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ gateId })
+        .send({ deviceId: 'DEV-ENTRY-1' })
         .expect(200)
         .then((res) => {
           expect(res.body.status).toBe('OUT');

@@ -12,6 +12,18 @@ export class AnalyticsOverviewDto {
 
   @ApiProperty({ example: 15.5 })
   weeklyGrowth?: number;
+
+  @ApiProperty({ example: 5 })
+  activeStaff!: number;
+
+  @ApiProperty({ example: 10 })
+  activeDevices!: number;
+
+  @ApiProperty({ example: 3 })
+  activeBranches!: number;
+
+  @ApiProperty({ example: 'active' })
+  subscriptionStatus!: string;
 }
 
 export class AnalyticsTrendDto {

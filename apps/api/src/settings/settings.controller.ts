@@ -15,6 +15,7 @@ import { Role } from '@prisma/client';
 import { SettingsService } from './settings.service';
 import { UpdateBrandingDto } from './dto/branding.dto';
 import { UpdateProfileDto } from './dto/profile.dto';
+import { UpdateSystemSettingsDto } from './dto/system.dto';
 import { Roles, GetCurrentUser } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 
@@ -59,5 +60,23 @@ export class SettingsController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.settingsService.updateProfile(organizationId, dto);
+  }
+
+  @ApiOperation({ summary: 'Get organization system settings' })
+  @ApiResponse({ status: 200, description: 'System settings retrieved successfully.' })
+  @Get('system')
+  async getSystemSettings(@GetCurrentUser('organizationId') organizationId: string) {
+    return this.settingsService.getSystemSettings(organizationId);
+  }
+
+  @ApiOperation({ summary: 'Update organization system settings' })
+  @Roles(Role.admin)
+  @ApiResponse({ status: 200, description: 'System settings updated successfully.' })
+  @Patch('system')
+  async updateSystemSettings(
+    @GetCurrentUser('organizationId') organizationId: string,
+    @Body() dto: UpdateSystemSettingsDto,
+  ) {
+    return this.settingsService.updateSystemSettings(organizationId, dto);
   }
 }

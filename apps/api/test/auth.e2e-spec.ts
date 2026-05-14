@@ -33,6 +33,15 @@ describe('AuthController (e2e)', () => {
         },
       },
     });
+    await prisma.branch.deleteMany({
+      where: {
+        organization: {
+          name: {
+            contains: 'Test Org',
+          },
+        },
+      },
+    });
     await prisma.organization.deleteMany({
       where: {
         name: {

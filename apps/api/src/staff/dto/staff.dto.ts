@@ -92,15 +92,15 @@ export class StaffCheckInDto {
   @IsNotEmpty()
   staffId!: string;
 
-  @ApiProperty({ example: 'g1h2i3j4-k5l6-m7n8-o9p0-q1r2s3t4u5v6' })
+  @ApiPropertyOptional({ example: 'g1h2i3j4-k5l6-m7n8-o9p0-q1r2s3t4u5v6' })
   @IsUUID()
-  @IsNotEmpty()
-  gateId!: string;
-
-  @ApiPropertyOptional({ example: 'DEV-001' })
-  @IsString()
   @IsOptional()
-  deviceId?: string;
+  gateId?: string;
+
+  @ApiProperty({ example: 'DEV-001' })
+  @IsString()
+  @IsNotEmpty()
+  deviceId!: string;
 }
 
 export class ShiftResponseDto {

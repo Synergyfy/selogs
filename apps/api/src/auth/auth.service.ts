@@ -3,13 +3,15 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { SignupDto, LoginDto } from './dto';
+import { SignupDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyOtpDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -123,6 +125,13 @@ export class AuthService {
         data: {
           name: dto.organizationName,
           code,
+          industry: dto.organizationType,
+          branches: dto.mainLocation ? {
+            create: {
+              name: dto.mainLocation,
+              code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+            }
+          } : undefined,
         },
       });
       organizationId = organization.id;
@@ -135,6 +144,8 @@ export class AuthService {
         email: dto.email,
         passwordHash: hash,
         role: dto.role,
+        fullName: dto.fullName,
+        phoneNumber: dto.phoneNumber,
         organizationId: organizationId,
       },
     });
@@ -221,5 +232,76 @@ export class AuthService {
     );
     await this.updateRtHash(user.id, tokens.refresh_token);
     return tokens;
+  }
+
+  /**
+   * Generates a password reset token and sends it to the user.
+   */
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken, resetTokenExpiry },
+    });
+
+    // TODO: Send email with reset token
+    return { message: 'Password reset link sent to email' };
+  }
+
+  /**
+   * Resets the user's password using the token.
+   */
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: dto.token,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) throw new BadRequestException('Invalid or expired reset token');
+
+    const passwordHash = await this.hashData(dto.newPassword);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return { message: 'Password reset successful' };
+  }
+
+  /**
+   * Verifies the user's account using an OTP.
+   */
+  async verifyAccount(dto: VerifyOtpDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: dto.email,
+        otpCode: dto.otpCode,
+        otpExpiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) throw new BadRequestException('Invalid or expired OTP');
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otpCode: null,
+        otpExpiry: null,
+      },
+    });
+
+    return { message: 'Account verified successfully' };
   }
 }

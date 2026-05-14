@@ -131,34 +131,34 @@ export class StaffService {
       throw new ConflictException('Staff already has an active shift');
     }
 
-    // 3. Get gate and branch
-    const gate = await this.prisma.gate.findFirst({
+    // 3. Resolve Device and get assigned branch and gate
+    const device = await this.prisma.device.findFirst({
       where: {
-        id: dto.gateId,
-        branch: { organizationId },
+        deviceId: dto.deviceId,
+        organizationId,
       },
-      include: { branch: true },
+      include: { gate: true },
     });
 
-    if (!gate) {
-      throw new NotFoundException('Gate not found or access denied');
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${dto.deviceId} not found`);
     }
 
-    // 4. Resolve Device if provided
-    let deviceId: string | undefined;
-    if (dto.deviceId) {
-      const device = await this.prisma.device.findUnique({
-        where: { deviceId: dto.deviceId },
-      });
-      if (device) deviceId = device.id;
+    if (!device.gateId) {
+      throw new BadRequestException(
+        `Device ${dto.deviceId} is not assigned to a gate. Please assign a gate in settings.`,
+      );
     }
 
-    // 5. Create Shift
+    const branchId = device.branchId;
+    const gateId = device.gateId;
+
+    // 4. Create Shift
     const shift = await this.prisma.shift.create({
       data: {
         userId: user.id,
-        branchId: gate.branchId,
-        deviceId,
+        branchId,
+        deviceId: device.id,
         organizationId,
       },
       include: {

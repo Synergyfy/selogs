@@ -57,6 +57,15 @@ describe('StaffController (e2e)', () => {
       },
     });
     gateId = gate.id;
+
+    await prisma.device.create({
+      data: {
+        deviceId: 'DEV-STAFF-1',
+        organizationId: branch.organizationId,
+        branchId: branch.id,
+        gateId: gate.id,
+      },
+    });
   });
 
   afterAll(async () => {
@@ -113,7 +122,7 @@ describe('StaffController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           staffId: 'G001',
-          gateId,
+          deviceId: 'DEV-STAFF-1',
         })
         .expect(201)
         .then((res) => {
@@ -128,7 +137,7 @@ describe('StaffController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           staffId: 'G001',
-          gateId,
+          deviceId: 'DEV-STAFF-1',
         })
         .expect(409);
     });

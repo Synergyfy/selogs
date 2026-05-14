@@ -54,6 +54,10 @@ model Organization {
   logo           String?
   primaryColor   String?  @default("#3B82F6") @map("primary_color")
   secondaryColor String?  @default("#1E293B") @map("secondary_color")
+  
+  enableNotes       Boolean  @default(true) @map("enable_notes")
+  enablePhoneNumber Boolean  @default(true) @map("enable_phone_number")
+  ocrEnabled        Boolean  @default(false) @map("ocr_enabled")
 
   users          User[]
   branches       Branch[]
@@ -261,6 +265,12 @@ model User {
   passwordHash     String        @map("password_hash")
   role             Role          @default(guard)
   refreshTokenHash String?       @map("refresh_token_hash")
+  
+  phoneNumber      String?       @map("phone_number")
+  resetToken       String?       @map("reset_token")
+  resetTokenExpiry DateTime?     @map("reset_token_expiry")
+  otpCode          String?       @map("otp_code")
+  otpExpiry        DateTime?     @map("otp_expiry")
   
   organizationId   String?       @map("organization_id")
   organization     Organization? @relation(fields: [organizationId], references: [id])

@@ -49,6 +49,19 @@ export class BranchesService {
     dto: CreateBranchDto,
     organizationId: string,
   ): Promise<BranchResponseDto> {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      include: { plan: true, _count: { select: { branches: true } } },
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    if (org.plan && org._count.branches >= org.plan.branchLimit) {
+      throw new ConflictException('Branch limit reached. Please upgrade your plan or purchase an add-on.');
+    }
+
     let code = dto.code;
 
     if (!code) {
