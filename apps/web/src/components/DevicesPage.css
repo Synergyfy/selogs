@@ -112,6 +112,16 @@
   flex-direction: column;
   gap: 20px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.device-card.offline {
+  opacity: 0.85;
+}
+
+.device-card.offline:hover {
+  opacity: 1;
 }
 
 .device-card:hover {
@@ -134,7 +144,18 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-input);
-  color: var(--accent);
+  color: var(--text-dim);
+  transition: all 0.2s;
+}
+
+.device-icon-box.online {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.device-icon-box.offline {
+  background: var(--bg-input);
+  color: var(--text-dim);
 }
 
 .device-status-indicator {
@@ -143,16 +164,33 @@
   gap: 8px;
   font-size: 12px;
   font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.device-status-indicator.online {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.device-status-indicator.offline {
+  color: var(--text-dim);
+  background: var(--bg-input);
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+}
+
+.status-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.status-dot.offline {
+  background: var(--text-muted);
 }
 
 .device-name {

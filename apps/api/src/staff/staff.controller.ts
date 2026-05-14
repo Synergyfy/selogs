@@ -29,6 +29,7 @@ import {
 import { Roles } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 import { GetCurrentUser } from '../auth/decorators';
+import { Capability } from '../common/capabilities';
 
 @ApiTags('staff')
 @ApiBearerAuth('access-token')
@@ -39,6 +40,7 @@ export class StaffController {
 
   @ApiOperation({ summary: 'Create a new staff member (Admin only)' })
   @ApiResponse({ status: 201, type: StaffResponseDto })
+  @Capability('staff:create')
   @Roles(Role.admin)
   @Post()
   async create(

@@ -12,7 +12,7 @@ export interface StaffMember {
 export interface CreateStaffDto {
   email: string;
   fullName: string;
-  staffId: string;
+  staffId?: string;
   role: 'supervisor' | 'guard';
   branchId?: string;
   password?: string;

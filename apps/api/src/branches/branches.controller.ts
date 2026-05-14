@@ -27,6 +27,7 @@ import {
 import { Roles } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 import { GetCurrentUser } from '../auth/decorators';
+import { Capability } from '../common/capabilities';
 
 @ApiTags('branches')
 @ApiBearerAuth('access-token')
@@ -71,6 +72,7 @@ export class BranchesController {
   })
   @ApiResponse({ status: 201, type: BranchResponseDto })
   @ApiResponse({ status: 409, description: 'Branch code already exists.' })
+  @Capability('branch:create')
   @Roles(Role.admin)
   @Post()
   @HttpCode(HttpStatus.CREATED)

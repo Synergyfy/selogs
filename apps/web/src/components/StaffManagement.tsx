@@ -9,9 +9,11 @@ import {
   Mail,
   X,
   Check,
-  Search
+  Search,
+  Loader2
 } from 'lucide-react';
 import { useStaffList, useCreateStaff, useUpdateStaff, useDeleteStaff } from '../hooks/dashboard/useStaff';
+import { useBranchesList } from '../hooks/dashboard/useBranches';
 import type { StaffMember } from '../types/dashboard';
 import DropdownMenu from './DropdownMenu';
 import ConfirmModal from './ConfirmModal';
@@ -20,6 +22,7 @@ import './StaffManagement.css';
 const StaffManagement: React.FC = () => {
   // API Hooks
   const { data: staffMembers = [] } = useStaffList();
+  const { data: branches = [] } = useBranchesList();
   const createMutation = useCreateStaff();
   const updateMutation = useUpdateStaff();
   const deleteMutation = useDeleteStaff();
@@ -32,7 +35,7 @@ const StaffManagement: React.FC = () => {
     id: '',
     fullName: '',
     email: '',
-    staffId: '',
+    branchId: '',
     role: 'guard' as 'supervisor' | 'guard',
   });
 
@@ -42,12 +45,12 @@ const StaffManagement: React.FC = () => {
         id: staff.id, 
         fullName: staff.fullName || '', 
         email: staff.email, 
-        staffId: staff.staffId || '', 
+        branchId: staff.branchId || '',
         role: (staff.role as 'supervisor' | 'guard') || 'guard'
       });
       setIsEditing(true);
     } else {
-      setFormData({ id: '', fullName: '', email: '', staffId: '', role: 'guard' });
+      setFormData({ id: '', fullName: '', email: '', branchId: branches[0]?.id || '', role: 'guard' });
       setIsEditing(false);
     }
     setIsModalOpen(true);
@@ -67,14 +70,19 @@ const StaffManagement: React.FC = () => {
       if (isEditing) {
         await updateMutation.mutateAsync({ 
           id: formData.id, 
-          data: { fullName: formData.fullName, role: formData.role } 
+          data: { 
+            fullName: formData.fullName, 
+            role: formData.role,
+            branchId: formData.branchId 
+          } 
         });
       } else {
         await createMutation.mutateAsync({
           fullName: formData.fullName,
           email: formData.email,
-          staffId: formData.staffId,
           role: formData.role,
+          branchId: formData.branchId,
+          password: 'Password123!', // Temporary default password for new staff
         });
       }
       handleCloseModal();
@@ -178,96 +186,118 @@ const StaffManagement: React.FC = () => {
         confirmText="Remove Member"
       />
 
-      {/* Modal */}
+      {/* Improved Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="modal-overlay" onClick={handleCloseModal}>
             <motion.div 
-              className="modal-content"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="modal-content premium-modal"
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="modal-header">
-                <h3>{isEditing ? 'Edit Staff Member' : 'Add New Staff'}</h3>
-                <button className="close-modal-btn" onClick={handleCloseModal}>
+              <div className="modal-header-premium">
+                <div className="modal-icon-badge">
+                  {isEditing ? <Edit2 size={24} /> : <UserPlus size={24} />}
+                </div>
+                <div className="modal-header-text">
+                  <h3>{isEditing ? 'Edit Staff Member' : 'Register New Staff'}</h3>
+                  <p>{isEditing ? 'Update personnel details and access level.' : 'Add a new guard or supervisor to your organization.'}</p>
+                </div>
+                <button className="close-modal-btn-circle" onClick={handleCloseModal}>
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveStaff} className="modal-form">
-                <div className="form-group">
-                  <label htmlFor="fullName">Full Name</label>
-                  <div className="input-wrapper">
-                    <User className="input-icon" />
-                    <input 
-                      type="text" 
-                      id="fullName" 
-                      name="fullName" 
-                      required 
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      placeholder="e.g. Samuel Okon"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="email">Email Address</label>
-                  <div className="input-wrapper">
-                    <Mail className="input-icon" />
-                    <input 
-                      type="email" 
-                      id="email" 
-                      name="email" 
-                      required 
-                      disabled={isEditing}
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="samuel@example.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group flex-1">
-                    <label htmlFor="staffId">Staff ID</label>
-                    <div className="input-wrapper">
-                      <Fingerprint className="input-icon" />
+              <form onSubmit={handleSaveStaff} className="modal-form-premium">
+                <div className="form-section">
+                  <h4 className="section-label">Personal Information</h4>
+                  <div className="form-group">
+                    <label htmlFor="fullName">Full Name</label>
+                    <div className="input-wrapper-premium">
+                      <User className="input-icon" size={18} />
                       <input 
                         type="text" 
-                        id="staffId" 
-                        name="staffId" 
+                        id="fullName" 
+                        name="fullName" 
                         required 
-                        disabled={isEditing}
-                        value={formData.staffId}
+                        value={formData.fullName}
                         onChange={handleInputChange}
-                        placeholder="ID-001"
+                        placeholder="e.g. Samuel Okon"
                       />
                     </div>
                   </div>
-                  <div className="form-group flex-1">
-                    <label htmlFor="role">Role</label>
-                    <select 
-                      id="role" 
-                      name="role" 
-                      className="modal-select"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                    >
-                      <option value="supervisor">Supervisor</option>
-                      <option value="guard">Guard</option>
-                    </select>
+
+                  <div className="form-group">
+                    <label htmlFor="email">Email Address</label>
+                    <div className="input-wrapper-premium">
+                      <Mail className="input-icon" size={18} />
+                      <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required 
+                        disabled={isEditing}
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="samuel@example.com"
+                      />
+                    </div>
                   </div>
                 </div>
 
+                <div className="form-section">
+                  <h4 className="section-label">Assignment & Role</h4>
+                  <div className="form-grid-2">
+                    <div className="form-group">
+                      <label htmlFor="role">Platform Role</label>
+                      <select 
+                        id="role" 
+                        name="role" 
+                        className="select-premium"
+                        value={formData.role}
+                        onChange={handleInputChange}
+                      >
+                        <option value="supervisor">Supervisor (Full Access)</option>
+                        <option value="guard">Security Guard</option>
+                      </select>
+                    </div>
 
-                <div className="modal-footer">
+                    <div className="form-group">
+                      <label htmlFor="branchId">Assigned Branch</label>
+                      <select 
+                        id="branchId" 
+                        name="branchId" 
+                        className="select-premium"
+                        value={formData.branchId}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="" disabled>Select a location</option>
+                        {branches.map(b => (
+                          <option key={b.id} value={b.id}>{b.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-footer-premium">
                   <button type="button" className="btn-text" onClick={handleCloseModal}>Cancel</button>
-                  <button type="submit" className="btn-primary">
-                    <Check size={18} />
-                    {isEditing ? 'Update Member' : 'Register Member'}
+                  <button 
+                    type="submit" 
+                    className={`btn-primary-premium ${(createMutation.isPending || updateMutation.isPending) ? 'loading' : ''}`}
+                    disabled={createMutation.isPending || updateMutation.isPending}
+                  >
+                    {(createMutation.isPending || updateMutation.isPending) ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      <>
+                        <Check size={18} />
+                        <span>{isEditing ? 'Update Profile' : 'Complete Registration'}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

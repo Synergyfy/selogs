@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './auth/guards';
+import { CapabilityModule, CapabilityGuard } from './common/capabilities';
 import { BranchesModule } from './branches/branches.module';
 import { EntriesModule } from './entries/entries.module';
 import { StaffModule } from './staff/staff.module';
@@ -51,6 +52,7 @@ import { AddonsModule } from './addons/addons.module';
     GatesModule,
     OrganizationsModule,
     AddonsModule,
+    CapabilityModule,
   ],
   controllers: [AppController],
   providers: [
@@ -58,6 +60,11 @@ import { AddonsModule } from './addons/addons.module';
     {
       provide: APP_GUARD,
       useClass: AtGuard,
+    },
+    // Runs after AtGuard — no-op when no @Capability() decorator is present.
+    {
+      provide: APP_GUARD,
+      useClass: CapabilityGuard,
     },
   ],
 })

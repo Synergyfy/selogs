@@ -21,6 +21,7 @@ import {
 } from './dto/analytics-response.dto';
 import { Roles, GetCurrentUser } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
+import { Capability } from '../common/capabilities';
 
 @ApiTags('analytics')
 @ApiBearerAuth('access-token')
@@ -31,6 +32,7 @@ export class AnalyticsController {
 
   @ApiOperation({ summary: 'Get dashboard overview stats' })
   @Roles(Role.admin, Role.supervisor)
+  @Capability('analytics:use')
   @ApiResponse({ status: 200, type: AnalyticsOverviewDto })
   @Get('overview')
   async getOverview(@GetCurrentUser('organizationId') organizationId: string) {
@@ -39,6 +41,7 @@ export class AnalyticsController {
 
   @ApiOperation({ summary: 'Get entry trends' })
   @Roles(Role.admin, Role.supervisor)
+  @Capability('analytics:use')
   @ApiQuery({ name: 'days', required: false, type: Number })
   @ApiResponse({ status: 200, type: [AnalyticsTrendDto] })
   @Get('trends')
@@ -51,6 +54,7 @@ export class AnalyticsController {
 
   @ApiOperation({ summary: 'Get branch breakdown' })
   @Roles(Role.admin, Role.supervisor)
+  @Capability('analytics:use')
   @ApiResponse({ status: 200, type: [BranchBreakdownDto] })
   @Get('branches')
   async getBranches(@GetCurrentUser('organizationId') organizationId: string) {

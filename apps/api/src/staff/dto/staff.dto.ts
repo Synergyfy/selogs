@@ -25,13 +25,13 @@ export class CreateStaffDto {
   @IsNotEmpty()
   fullName!: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'S12345',
-    description: 'Unique alphanumeric staff ID',
+    description: 'Unique alphanumeric staff ID (Auto-generated if not provided)',
   })
   @IsString()
-  @IsNotEmpty()
-  staffId!: string;
+  @IsOptional()
+  staffId?: string;
 
   @ApiProperty({ enum: Role, example: Role.guard })
   @IsEnum(Role)

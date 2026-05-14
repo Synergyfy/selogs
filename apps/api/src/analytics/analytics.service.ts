@@ -78,7 +78,7 @@ export class AnalyticsService {
    */
   async getTrends(organizationId: string, days = 7): Promise<AnalyticsTrendDto[]> {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    startDate.setDate(startDate.getDate() - (days - 1)); // Include today
     startDate.setHours(0, 0, 0, 0);
 
     const trends = await this.prisma.$queryRaw<any[]>`
@@ -90,10 +90,27 @@ export class AnalyticsService {
       ORDER BY date ASC
     `;
 
-    return trends.map((t) => ({
-      date: t.date.toISOString().split('T')[0],
-      count: Number(t.count),
-    }));
+    // Create a map of existing data
+    const trendMap = new Map<string, number>();
+    trends.forEach((t) => {
+      const dateStr = new Date(t.date).toISOString().split('T')[0];
+      trendMap.set(dateStr, Number(t.count));
+    });
+
+    // Fill in missing days
+    const result: AnalyticsTrendDto[] = [];
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      result.push({
+        date: dateStr,
+        count: trendMap.get(dateStr) || 0,
+      });
+    }
+
+    return result;
   }
 
   /**
@@ -164,7 +181,7 @@ export class AnalyticsService {
    */
   async getGlobalTrends(days = 30): Promise<AnalyticsTrendDto[]> {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    startDate.setDate(startDate.getDate() - (days - 1));
     startDate.setHours(0, 0, 0, 0);
 
     const trends = await this.prisma.$queryRaw<any[]>`
@@ -175,9 +192,24 @@ export class AnalyticsService {
       ORDER BY date ASC
     `;
 
-    return trends.map((t) => ({
-      date: t.date.toISOString().split('T')[0],
-      count: Number(t.count),
-    }));
+    const trendMap = new Map<string, number>();
+    trends.forEach((t) => {
+      const dateStr = new Date(t.date).toISOString().split('T')[0];
+      trendMap.set(dateStr, Number(t.count));
+    });
+
+    const result: AnalyticsTrendDto[] = [];
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      result.push({
+        date: dateStr,
+        count: trendMap.get(dateStr) || 0,
+      });
+    }
+
+    return result;
   }
 }

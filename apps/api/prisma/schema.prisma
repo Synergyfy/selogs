@@ -66,6 +66,7 @@ model Organization {
   shifts         Shift[]
   subscription   Subscription?
   invoices       Invoice[]
+  addons         OrganizationAddon[]
 
   @@map("organizations")
 }
@@ -322,8 +323,34 @@ model Addon {
   deviceLimitInc Int      @default(0) @map("device_limit_inc")
   customFeatures String[] @map("custom_features")
 
+  // Boolean feature grants — if true, purchasing this addon unlocks the feature
+  grantsOcr        Boolean  @default(false) @map("grants_ocr")
+  grantsAnalytics  Boolean  @default(false) @map("grants_analytics")
+  grantsExport     Boolean  @default(false) @map("grants_export")
+
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  organizations  OrganizationAddon[]
+
   @@map("addons")
+}
+
+// Join table: tracks which add-ons an organisation has purchased.
+model OrganizationAddon {
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  addonId        String    @map("addon_id")
+  addon          Addon     @relation(fields: [addonId], references: [id])
+  // Number of units purchased (e.g. 2 × "Extra Branch" = +2 branch slots)
+  quantity       Int       @default(1)
+  isActive       Boolean   @default(true) @map("is_active")
+  purchasedAt    DateTime  @default(now()) @map("purchased_at")
+  // Null = does not expire independently (follows subscription expiry)
+  expiresAt      DateTime? @map("expires_at")
+
+  @@unique([organizationId, addonId])
+  @@index([organizationId])
+  @@map("organization_addons")
 }

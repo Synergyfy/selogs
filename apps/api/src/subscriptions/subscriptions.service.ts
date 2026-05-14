@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { PlansService } from '../plans/plans.service';
+import { CapabilityService } from '../common/capabilities';
 import { InitializeSubscriptionDto, BillingCycle } from './dto/initialize-subscription.dto';
 import { SubscriptionStatus } from '@prisma/client';
 
@@ -13,6 +14,7 @@ export class SubscriptionsService {
     private readonly prisma: PrismaService,
     private readonly paystack: PaystackService,
     private readonly plansService: PlansService,
+    private readonly capabilityService: CapabilityService,
   ) {}
 
   /**
@@ -40,24 +42,31 @@ export class SubscriptionsService {
       this.prisma.device.count({ where: { organizationId } }),
     ]);
 
+    // Resolve merged capabilities (plan + add-ons) — this is the single source
+    // of truth for limits. Using it here keeps usage.limits consistent with the
+    // capabilities object and avoids a second org query.
+    const capabilities = await this.capabilityService.resolve(organizationId);
+
     return {
       subscription: org.subscription,
       activePlan,
       usage: {
         branches: {
           used: branchCount,
-          limit: activePlan?.branchLimit || 0,
+          limit: capabilities.branchLimit,
         },
         staff: {
           used: staffCount,
-          limit: activePlan?.staffLimit || 0,
+          limit: capabilities.staffLimit,
         },
         devices: {
           used: deviceCount,
-          limit: activePlan?.deviceLimit || 0,
+          limit: capabilities.deviceLimit,
         },
       },
+      capabilities,
     };
+
   }
 
   /**

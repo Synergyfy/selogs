@@ -8,7 +8,8 @@ import {
   Smartphone, 
   TrendingUp,
   ArrowUpRight,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
 import { useDashboardOverview, useDashboardTrends } from '../hooks/dashboard/useDashboardStats';
 import { useEntriesList } from '../hooks/dashboard/useEntries';
@@ -19,8 +20,17 @@ const Dashboard: React.FC = () => {
 
   // API Hooks
   const { data: overview } = useDashboardOverview();
-  const { data: trends } = useDashboardTrends(7);
+  const { data: trendData = [], isLoading: isLoadingTrend } = useDashboardTrends(14);
   const { data: entriesData } = useEntriesList({ limit: 5 });
+
+  // Calculate trends
+  const trends = trendData.slice(-7); // Last 7 days for display
+  const lastWeek = trendData.slice(-7).reduce((acc, t) => acc + t.count, 0);
+  const prevWeek = trendData.slice(0, 7).reduce((acc, t) => acc + t.count, 0);
+  
+  const trendPercent = prevWeek === 0 
+    ? (lastWeek > 0 ? 100 : 0) 
+    : Math.round(((lastWeek - prevWeek) / prevWeek) * 100);
 
   const stats = [
     { title: "Today's Entries", value: overview?.todayEntries.toString() || '0', change: "Live", icon: <Car size={24} />, color: "indigo" },
@@ -122,31 +132,34 @@ const Dashboard: React.FC = () => {
         >
           <div className="card-header">
             <h3>Weekly Traffic</h3>
-            <div className={`stat-change emerald`}>
-              <TrendingUp size={16} /> +15%
+            <div className={`stat-change ${trendPercent >= 0 ? 'emerald' : 'danger'}`}>
+              <TrendingUp size={16} className={trendPercent < 0 ? 'rotate-180' : ''} />
+              {trendPercent >= 0 ? '+' : ''}{trendPercent}%
             </div>
           </div>
           <div className="chart-placeholder">
-            <div className="chart-bars">
-              {(trends || []).map((t, i) => (
-                <div 
-                  key={i} 
-                  className="chart-bar" 
-                  style={{ height: `${Math.min(100, (t.count / (Math.max(...(trends?.map(tr => tr.count) || [1]))) * 100))}%` }}
-                />
-              ))}
-              {(!trends || trends.length === 0) && [40, 70, 45, 90, 65, 80, 50].map((height, i) => (
-                <div key={i} className="chart-bar" style={{ height: `${height}%` }} />
-              ))}
-            </div>
-            <div className="chart-labels">
-              {(trends || []).map((t, i) => (
-                <span key={i}>{new Date(t.date).toLocaleDateString([], { weekday: 'narrow' })}</span>
-              ))}
-              {(!trends || trends.length === 0) && ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-                <span key={i}>{day}</span>
-              ))}
-            </div>
+            {isLoadingTrend ? (
+              <div className="flex-center" style={{ height: '100%' }}>
+                <Loader2 className="animate-spin text-muted" size={32} />
+              </div>
+            ) : (
+              <>
+                <div className="chart-bars">
+                  {trends.map((t, i) => (
+                    <div 
+                      key={i} 
+                      className="chart-bar" 
+                      style={{ height: `${Math.min(100, (t.count / (Math.max(...(trends.map(tr => tr.count) || [1]))) * 100))}%` }}
+                    />
+                  ))}
+                </div>
+                <div className="chart-labels">
+                  {trends.map((t, i) => (
+                    <span key={i}>{new Date(t.date).toLocaleDateString([], { weekday: 'narrow' })}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       </div>

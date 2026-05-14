@@ -27,6 +27,7 @@ import {
 import { Roles } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 import { GetCurrentUser } from '../auth/decorators';
+import { Capability } from '../common/capabilities';
 
 @ApiTags('devices')
 @ApiBearerAuth('access-token')
@@ -37,6 +38,7 @@ export class DevicesController {
 
   @ApiOperation({ summary: 'Register a new handheld device (Admin only)' })
   @ApiResponse({ status: 201, type: DeviceResponseDto })
+  @Capability('device:create')
   @Roles(Role.admin)
   @Post()
   @HttpCode(HttpStatus.CREATED)

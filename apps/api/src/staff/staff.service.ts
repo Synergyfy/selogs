@@ -33,11 +33,8 @@ export class StaffService {
     });
     if (existingEmail) throw new ConflictException('Email already in use');
 
-    // 2. Check if staffId exists
-    const existingStaffId = await this.prisma.user.findUnique({
-      where: { staffId: dto.staffId },
-    });
-    if (existingStaffId) throw new ConflictException('Staff ID already exists');
+    // 2. Generate Staff ID
+    const staffId = await this.generateUniqueStaffId();
 
     // 3. Prevent creating admins via this endpoint
     if (dto.role === Role.admin || dto.role === Role.super_admin) {
@@ -51,7 +48,7 @@ export class StaffService {
         email: dto.email,
         passwordHash,
         fullName: dto.fullName,
-        staffId: dto.staffId,
+        staffId: staffId,
         role: dto.role,
         branchId: dto.branchId,
         organizationId,
@@ -303,5 +300,28 @@ export class StaffService {
       where: { id },
       data: { deletedAt: new Date() },
     });
+  }
+
+  /**
+   * Helper: Generate a unique staff ID (Format: VGD-XXXXX)
+   */
+  private async generateUniqueStaffId(): Promise<string> {
+    let isUnique = false;
+    let staffId = '';
+
+    while (!isUnique) {
+      const random = Math.floor(10000 + Math.random() * 90000);
+      staffId = `VGD-${random}`;
+
+      const existing = await this.prisma.user.findUnique({
+        where: { staffId },
+      });
+
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    return staffId;
   }
 }

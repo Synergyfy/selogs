@@ -6,20 +6,25 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { GatesService } from './gates.service';
 import { CreateGateDto, UpdateGateDto, GateResponseDto } from './dto/gate.dto';
 import { GetCurrentUser, Roles } from '../auth/decorators';
+import { RolesGuard } from '../auth/guards';
+import { Capability } from '../common/capabilities';
 
 @ApiTags('gates')
 @ApiBearerAuth('access-token')
+@UseGuards(RolesGuard)
 @Controller('gates')
 export class GatesController {
   constructor(private readonly gatesService: GatesService) {}
 
   @Post()
+  @Capability('gate:create')
   @Roles(Role.admin, Role.super_admin)
   @ApiOperation({ summary: 'Create a new gate' })
   @ApiResponse({

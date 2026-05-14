@@ -18,14 +18,40 @@ import {
 } from 'lucide-react';
 import DropdownMenu from './DropdownMenu';
 import ConfirmModal from './ConfirmModal';
-import { useDevicesList, useDeleteDevice } from '../hooks/dashboard/useDevices';
+import { useDevicesList, useDeleteDevice, useUpdateDevice } from '../hooks/dashboard/useDevices';
 import { useBranchesList } from '../hooks/dashboard/useBranches';
+import { useOrgProfile } from '../hooks/dashboard/useSettings';
 import './DevicesPage.css';
+
+const formatRelativeTime = (dateString?: string) => {
+  if (!dateString) return 'Never synced';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMins = Math.floor(diffInMs / (1000 * 60));
+
+  if (diffInMins < 1) return 'Just now';
+  if (diffInMins < 60) return `${diffInMins}m ago`;
+  const diffInHours = Math.floor(diffInMins / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+};
+
+const isDeviceOnline = (lastActive?: string) => {
+  if (!lastActive) return false;
+  const lastDate = new Date(lastActive);
+  const diff = Date.now() - lastDate.getTime();
+  return diff < 5 * 60 * 1000; // 5 minutes threshold
+};
 
 const DevicesPage: React.FC = () => {
   const { data: devices = [], isLoading } = useDevicesList();
   const { data: branches = [] } = useBranchesList();
+  const { data: orgProfile } = useOrgProfile();
   const deleteMutation = useDeleteDevice();
+  const updateMutation = useUpdateDevice();
 
   const [copied, setCopied] = useState(false);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
@@ -33,8 +59,8 @@ const DevicesPage: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deviceToUnlink, setDeviceToUnlink] = useState<string | null>(null);
 
-  // Use first branch code as org code for linking instructions
-  const orgCode = branches[0]?.code || 'Loading...';
+  // Use real organization code from backend
+  const orgCode = orgProfile?.code || '......';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(orgCode);
@@ -113,23 +139,34 @@ const DevicesPage: React.FC = () => {
         {devices.map((device, index) => (
           <motion.div 
             key={device.id}
-            className="device-card online"
+            className={`device-card ${isDeviceOnline(device.lastActive) ? 'online' : 'offline'}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
             <div className="device-card-header">
-              <div className="device-icon-box phone">
+              <div className={`device-icon-box ${isDeviceOnline(device.lastActive) ? 'online' : 'offline'}`}>
                 {getIcon(device.name)}
               </div>
-              <div className="device-status-indicator">
-                <span className="status-dot online" />
-                Active
+              <div className={`device-status-indicator ${isDeviceOnline(device.lastActive) ? 'online' : 'offline'}`}>
+                <span className={`status-dot ${isDeviceOnline(device.lastActive) ? 'online' : 'offline'}`} />
+                {isDeviceOnline(device.lastActive) ? 'Online' : 'Offline'}
               </div>
               <DropdownMenu 
                 options={[
-                  { label: 'Edit Device', icon: <Edit2 size={14} />, onClick: () => {} },
-                  { label: 'Lock Access', icon: <Lock size={14} />, onClick: () => {} },
+                  { 
+                    label: 'Rename Device', 
+                    icon: <Edit2 size={14} />, 
+                    onClick: () => {
+                      const newName = prompt('Enter new device name:', device.name || '');
+                      if (newName) updateMutation.mutate({ id: device.id, data: { name: newName } });
+                    } 
+                  },
+                  { 
+                    label: 'Lock Device', 
+                    icon: <Lock size={14} />, 
+                    onClick: () => alert('Remote locking will be available in the next security update.') 
+                  },
                   { label: 'Unlink Device', icon: <Trash2 size={14} />, onClick: () => handleUnlinkClick(device.id), danger: true },
                 ]}
                 horizontal
@@ -143,7 +180,7 @@ const DevicesPage: React.FC = () => {
               <div className="device-meta-row">
                 <div className="meta-item">
                   <Clock size={14} />
-                  <span>{device.lastActive ? new Date(device.lastActive).toLocaleString() : 'Never synced'}</span>
+                  <span>{formatRelativeTime(device.lastActive)}</span>
                 </div>
                 <div className="meta-item">
                   <Activity size={14} />
