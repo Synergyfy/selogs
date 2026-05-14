@@ -1,33 +1,38 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, ArrowLeft, Crown, Smartphone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AuthLayout.css';
 
+import { useAuthActions } from '../hooks/useAuthActions';
+import { Role } from '../services/auth.service';
+
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { loginAsDemo } = useAuth();
+  const { user, isAuthenticated, role } = useAuth();
+  const { login, isLoggingIn, loginError } = useAuthActions();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [loading, setLoading] = useState(false);
+
+  // Role-based redirection once authenticated
+  if (isAuthenticated && role) {
+    return <Navigate to={role === Role.super_admin ? '/super-admin' : '/dashboard'} replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Simulate real login
-    await loginAsDemo('admin');
-    setLoading(false);
-    navigate('/dashboard');
+    login(formData);
   };
 
-  const handleDemoLogin = async (target: '/dashboard' | '/super-admin') => {
-    const role = target === '/super-admin' ? 'admin' : 'admin'; // Both demo as admin for now
-    await loginAsDemo(role);
-    navigate(target);
+  const handleDemoLogin = (target: '/dashboard' | '/super-admin') => {
+    setFormData({
+      email: target === '/super-admin' ? 'superadmin@vguard.com' : 'admin@vguard.com',
+      password: 'password123'
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,9 +132,15 @@ const LoginPage: React.FC = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn-auth-submit" disabled={loading}>
-                {loading ? 'Logging in...' : 'Log In to Dashboard'}
-                {!loading && <ArrowRight size={18} />}
+              {loginError && (
+                <div style={{ color: 'var(--error)', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>
+                  Invalid email or password. Please try again.
+                </div>
+              )}
+
+              <button type="submit" className="btn-auth-submit" disabled={isLoggingIn}>
+                {isLoggingIn ? 'Logging in...' : 'Log In to Dashboard'}
+                {!isLoggingIn && <ArrowRight size={18} />}
               </button>
             </form>
 

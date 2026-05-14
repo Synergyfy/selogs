@@ -304,4 +304,24 @@ export class AuthService {
 
     return { message: 'Account verified successfully' };
   }
+
+  /**
+   * Returns the current user's profile.
+   */
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        fullName: true,
+        phoneNumber: true,
+        organizationId: true,
+        branchId: true,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
 }

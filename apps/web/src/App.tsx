@@ -48,34 +48,8 @@ import { useAuth } from './context/AuthContext'
 import { notificationService } from './services/NotificationService'
 import './App.css'
 
-// Route protection wrapper
-const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
-  const { user, isLoading, userRole, organization } = useAuth();
-
-  useEffect(() => {
-    // Run lifecycle checks on app startup if user is logged in
-    if (user?.isAuthenticated && organization) {
-      notificationService.checkLifecycleEvents({
-        id: organization.id,
-        joinedDate: organization.joinedDate || Date.now() - (11 * 24 * 60 * 60 * 1000), // Default mock: 11 days ago
-        plan: organization.plan
-      });
-    }
-  }, [user, organization]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && !user?.isAuthenticated) {
-      navigate('/login');
-    }
-    if (!isLoading && roles && userRole && !roles.includes(userRole)) {
-      navigate('/dashboard');
-    }
-  }, [user, isLoading, userRole, roles, navigate]);
-
-  if (isLoading) return <div className="loading-screen">Authenticating...</div>;
-  return user?.isAuthenticated ? <>{children}</> : null;
-};
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import { Role } from './services/auth.service'
 
 type Screen = 'connect' | 'checkin' | 'home' | 'new_entry' | 'history' | 'check_out'
 
@@ -411,21 +385,21 @@ function App() {
         <Route path="/app/*" element={<MobileApp theme={effectiveTheme} toggleTheme={toggleTheme} />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><Dashboard /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/entries" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><EntriesPage /></DashboardLayout></ProtectedRoute>} />
-        <Route path="/dashboard/branches" element={<ProtectedRoute roles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BranchesPage /></DashboardLayout></ProtectedRoute>} />
-        <Route path="/dashboard/staff" element={<ProtectedRoute roles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><StaffManagement /></DashboardLayout></ProtectedRoute>} />
-        <Route path="/dashboard/devices" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><DevicesPage /></DashboardLayout></ProtectedRoute>} />
-        <Route path="/dashboard/subscription" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SubscriptionPage /></DashboardLayout></ProtectedRoute>} />
-        <Route path="/dashboard/billing" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BillingPage /></DashboardLayout></ProtectedRoute>} />
-        <Route path="/dashboard/settings" element={<ProtectedRoute roles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SettingsPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/branches" element={<ProtectedRoute allowedRoles={[Role.admin, Role.supervisor]}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BranchesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/staff" element={<ProtectedRoute allowedRoles={[Role.admin, Role.supervisor]}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><StaffManagement /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/devices" element={<ProtectedRoute allowedRoles={[Role.admin]}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><DevicesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/subscription" element={<ProtectedRoute allowedRoles={[Role.admin]}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SubscriptionPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/billing" element={<ProtectedRoute allowedRoles={[Role.admin]}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BillingPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/settings" element={<ProtectedRoute allowedRoles={[Role.admin]}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SettingsPage /></DashboardLayout></ProtectedRoute>} />
         
         {/* Super Admin Routes */}
-        <Route path="/super-admin" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminDashboard /></SuperAdminLayout></ProtectedRoute>} />
-        <Route path="/super-admin/customers" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminCustomers /></SuperAdminLayout></ProtectedRoute>} />
-        <Route path="/super-admin/plans" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminPlans /></SuperAdminLayout></ProtectedRoute>} />
-        <Route path="/super-admin/features" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminFeatures /></SuperAdminLayout></ProtectedRoute>} />
-        <Route path="/super-admin/billing" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminBilling /></SuperAdminLayout></ProtectedRoute>} />
-        <Route path="/super-admin/notifications" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminNotifications /></SuperAdminLayout></ProtectedRoute>} />
-        <Route path="/super-admin/settings" element={<ProtectedRoute roles={['admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminSettings /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminDashboard /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/customers" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminCustomers /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/plans" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminPlans /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/features" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminFeatures /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/billing" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminBilling /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/notifications" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminNotifications /></SuperAdminLayout></ProtectedRoute>} />
+        <Route path="/super-admin/settings" element={<ProtectedRoute allowedRoles={[Role.super_admin]}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminSettings /></SuperAdminLayout></ProtectedRoute>} />
       </Routes>
       <PWAPrompt />
     </>

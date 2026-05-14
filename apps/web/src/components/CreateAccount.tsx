@@ -1,26 +1,40 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import './AuthLayout.css';
+import { useAuthActions } from '../hooks/useAuthActions';
+import { Role } from '../services/auth.service';
+import { useAuth } from '../context/AuthContext';
 
 const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, role } = useAuth();
+  const { signup, isSigningUp, signupError } = useAuthActions();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    phone: '',
-    password: ''
+    password: '',
+    organizationName: '',
+    organizationType: 'Hotel',
+    mainLocation: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Redirect once authenticated
+  if (isAuthenticated && role) {
+    return <Navigate to={role === Role.super_admin ? '/super-admin' : '/dashboard'} replace />;
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/verify-account');
+    signup({
+      ...formData,
+      role: Role.admin, // Default signup for admin
+    });
   };
 
   return (
@@ -134,9 +148,64 @@ const CreateAccount: React.FC = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn-auth-submit">
-                Create Account
-                <ArrowRight size={18} />
+              <div className="input-group-premium">
+                <label>Organization Name</label>
+                <div className="input-field-wrapper">
+                  <ShieldCheck className="input-icon" />
+                  <input 
+                    type="text" 
+                    name="organizationName" 
+                    placeholder="e.g. Grand Security Ltd" 
+                    required 
+                    value={formData.organizationName}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group-premium">
+                <label>Organization Type</label>
+                <div className="input-field-wrapper">
+                  <User className="input-icon" />
+                  <select 
+                    name="organizationType" 
+                    value={formData.organizationType}
+                    onChange={handleChange}
+                    className="custom-select-premium"
+                    style={{ width: '100%', background: 'transparent', color: 'white', border: 'none', padding: '12px 12px 12px 40px', appearance: 'none' }}
+                  >
+                    <option value="Hotel" style={{ background: '#0a0e1a' }}>Hotel</option>
+                    <option value="Estate" style={{ background: '#0a0e1a' }}>Residential Estate</option>
+                    <option value="Office" style={{ background: '#0a0e1a' }}>Corporate Office</option>
+                    <option value="Security" style={{ background: '#0a0e1a' }}>Security Company</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group-premium">
+                <label>Main Branch/Location</label>
+                <div className="input-field-wrapper">
+                  <User className="input-icon" />
+                  <input 
+                    type="text" 
+                    name="mainLocation" 
+                    placeholder="e.g. Main Gate" 
+                    required 
+                    value={formData.mainLocation}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              {signupError && (
+                <div style={{ color: 'var(--error)', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>
+                  Signup failed. Email might already be in use.
+                </div>
+              )}
+
+              <button type="submit" className="btn-auth-submit" disabled={isSigningUp}>
+                {isSigningUp ? 'Creating Account...' : 'Create Account'}
+                {!isSigningUp && <ArrowRight size={18} />}
               </button>
             </form>
 

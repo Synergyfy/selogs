@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -174,6 +175,19 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP.' })
   async verifyAccount(@Body() dto: VerifyOtpDto) {
     return this.authService.verifyAccount(dto);
+  }
+
+  /**
+   * Gets the current user's profile.
+   */
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'User profile retrieved.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async getMe(@GetCurrentUserId() userId: string) {
+    return this.authService.getMe(userId);
   }
 
   /**
