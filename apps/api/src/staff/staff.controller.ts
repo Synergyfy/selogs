@@ -90,4 +90,28 @@ export class StaffController {
   ): Promise<ShiftResponseDto[]> {
     return this.staffService.getShiftHistory(organizationId);
   }
+
+  @ApiOperation({ summary: 'Update staff member (Admin only)' })
+  @ApiResponse({ status: 200, type: StaffResponseDto })
+  @Roles(Role.admin)
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStaffDto,
+    @GetCurrentUser('organizationId') organizationId: string,
+  ): Promise<StaffResponseDto> {
+    return this.staffService.update(id, dto, organizationId);
+  }
+
+  @ApiOperation({ summary: 'Delete staff member (Admin only)' })
+  @ApiResponse({ status: 204 })
+  @Roles(Role.admin)
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @Param('id') id: string,
+    @GetCurrentUser('organizationId') organizationId: string,
+  ): Promise<void> {
+    return this.staffService.remove(id, organizationId);
+  }
 }

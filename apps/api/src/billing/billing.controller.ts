@@ -1,9 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, HttpCode, HttpStatus, Delete } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { GetCurrentUser } from '../auth/decorators';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { AddPaymentMethodDto } from './dto/payment-method.dto';
 
 @Controller('billing')
 @UseGuards(RolesGuard)
@@ -30,5 +31,20 @@ export class BillingController {
   @Roles(Role.super_admin)
   async getGlobalInvoices(@Query('page') page?: number, @Query('limit') limit?: number) {
     return this.billingService.getGlobalInvoices(Number(page) || 1, Number(limit) || 20);
+  }
+
+  @Get('payment-methods')
+  @Roles(Role.admin)
+  async getPaymentMethods(@GetCurrentUser('organizationId') organizationId: string) {
+    return this.billingService.getPaymentMethods(organizationId);
+  }
+
+  @Post('payment-methods')
+  @Roles(Role.admin)
+  async addPaymentMethod(
+    @GetCurrentUser('organizationId') organizationId: string,
+    @Body() dto: AddPaymentMethodDto,
+  ) {
+    return this.billingService.addPaymentMethod(organizationId, dto.reference);
   }
 }

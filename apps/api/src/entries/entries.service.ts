@@ -42,7 +42,7 @@ export class EntriesService {
     const skip = (page - 1) * limit;
 
     // Build filters
-    const where: any = { organizationId };
+    const where: any = { organizationId, deletedAt: null };
 
     // Role-based scoping: Supervisors and Guards only see their assigned branch by default
     if (
@@ -119,7 +119,7 @@ export class EntriesService {
    */
   async findOne(id: string, organizationId: string): Promise<EntryResponseDto> {
     const entry = await this.prisma.vehicleEntry.findFirst({
-      where: { id, organizationId },
+      where: { id, organizationId, deletedAt: null },
       include: {
         branch: true,
         checkInStaff: true,
@@ -183,6 +183,7 @@ export class EntriesService {
         plateNumber: dto.plateNumber,
         organizationId,
         status: EntryStatus.IN,
+        deletedAt: null,
       },
     });
 
@@ -236,7 +237,7 @@ export class EntriesService {
     staffId: string,
   ): Promise<EntryResponseDto> {
     const entry = await this.prisma.vehicleEntry.findFirst({
-      where: { id, organizationId },
+      where: { id, organizationId, deletedAt: null },
     });
 
     if (!entry) {
@@ -297,5 +298,21 @@ export class EntriesService {
       imagePath: updated.imagePath,
       createdAt: updated.createdAt,
     };
+  }
+
+  /**
+   * Soft-delete an entry.
+   */
+  async remove(id: string, organizationId: string): Promise<void> {
+    const entry = await this.prisma.vehicleEntry.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
+
+    if (!entry) throw new NotFoundException('Entry not found');
+
+    await this.prisma.vehicleEntry.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 }

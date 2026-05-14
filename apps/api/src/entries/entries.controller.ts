@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -96,5 +97,17 @@ export class EntriesController {
     @GetCurrentUser('sub') userId: string,
   ): Promise<EntryResponseDto> {
     return this.entriesService.checkout(id, dto, organizationId, userId);
+  }
+
+  @ApiOperation({ summary: 'Delete vehicle entry (Admin only)' })
+  @ApiResponse({ status: 204 })
+  @Roles(Role.admin)
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @Param('id') id: string,
+    @GetCurrentUser('organizationId') organizationId: string,
+  ): Promise<void> {
+    return this.entriesService.remove(id, organizationId);
   }
 }

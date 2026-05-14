@@ -81,6 +81,7 @@ export class StaffService {
       where: {
         organizationId,
         role: { in: [Role.supervisor, Role.guard] },
+        deletedAt: null,
       },
       include: {
         branch: true,
@@ -250,5 +251,57 @@ export class StaffService {
       endTime: s.endTime || undefined,
       deviceName: s.device?.name || undefined,
     }));
+  }
+
+  /**
+   * Update staff details.
+   */
+  async update(
+    id: string,
+    dto: UpdateStaffDto,
+    organizationId: string,
+  ): Promise<StaffResponseDto> {
+    const staff = await this.prisma.user.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
+
+    if (!staff) throw new NotFoundException('Staff not found');
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        fullName: dto.fullName,
+        role: dto.role,
+        branchId: dto.branchId,
+      },
+      include: { branch: true },
+    });
+
+    return {
+      id: updated.id,
+      email: updated.email,
+      fullName: updated.fullName || undefined,
+      staffId: updated.staffId || undefined,
+      role: updated.role,
+      branchId: updated.branchId || undefined,
+      branchName: updated.branch?.name,
+      createdAt: updated.createdAt,
+    };
+  }
+
+  /**
+   * Soft-delete a staff member.
+   */
+  async remove(id: string, organizationId: string): Promise<void> {
+    const staff = await this.prisma.user.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
+
+    if (!staff) throw new NotFoundException('Staff not found');
+
+    await this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 }

@@ -176,9 +176,10 @@ export class AuthService {
    * Logs in an existing user.
    */
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: {
         email: dto.email,
+        deletedAt: null,
       },
     });
 
@@ -233,9 +234,10 @@ export class AuthService {
    * Refreshes access and refresh tokens.
    */
   async refreshTokens(userId: string, rt: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: {
         id: userId,
+        deletedAt: null,
       },
     });
 
