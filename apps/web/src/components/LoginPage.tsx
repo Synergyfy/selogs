@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, ArrowLeft, Crown, Smartphone } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import './AuthLayout.css';
 
 import { useAuthActions } from '../hooks/useAuthActions';

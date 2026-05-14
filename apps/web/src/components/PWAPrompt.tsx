@@ -9,16 +9,16 @@ const PWAPrompt: React.FC = () => {
     onRegistered(r: ServiceWorkerRegistration | undefined) {
       console.log('SW Registered: ' + r);
     },
-    onRegisterError(error: any) {
+    onRegisterError(error: unknown) {
       console.log('SW registration error', error);
     },
   });
 
   // Safe fallback to prevent destructuring crash
   const {
-    offlineReady: [offlineReady, setOfflineReady] = [false, (_v: boolean) => {}],
-    needUpdate: [needUpdate, setNeedUpdate] = [false, (_v: boolean) => {}],
-    updateServiceWorker = (_r?: boolean) => Promise.resolve(),
+    offlineReady: [offlineReady, setOfflineReady] = [false, () => {}],
+    needUpdate: [needUpdate, setNeedUpdate] = [false, () => {}],
+    updateServiceWorker = () => Promise.resolve(),
   } = sw || {};
 
   const close = () => {

@@ -6,30 +6,23 @@ import {
   Trash2, 
   User, 
   Fingerprint, 
-  Phone, 
+  Mail,
   X,
   Check,
   Search
 } from 'lucide-react';
+import { useStaffList, useCreateStaff, useUpdateStaff, useDeleteStaff } from '../hooks/dashboard/useStaff';
+import type { StaffMember } from '../types/dashboard';
 import DropdownMenu from './DropdownMenu';
 import ConfirmModal from './ConfirmModal';
 import './StaffManagement.css';
 
-interface Staff {
-  id: string;
-  name: string;
-  staffId: string;
-  phone: string;
-  status: 'Active' | 'Inactive';
-  lastActive: string;
-}
-
 const StaffManagement: React.FC = () => {
-  const [staffMembers, setStaffMembers] = useState<Staff[]>([
-    { id: '1', name: 'Samuel Okon', staffId: 'ID-001', phone: '08012345678', status: 'Active', lastActive: '2 mins ago' },
-    { id: '2', name: 'John Doe', staffId: 'ID-002', phone: '08123456789', status: 'Active', lastActive: '45 mins ago' },
-    { id: '3', name: 'Mary Jane', staffId: 'ID-003', phone: '07034567890', status: 'Inactive', lastActive: '1 day ago' },
-  ]);
+  // API Hooks
+  const { data: staffMembers = [] } = useStaffList();
+  const createMutation = useCreateStaff();
+  const updateMutation = useUpdateStaff();
+  const deleteMutation = useDeleteStaff();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -37,18 +30,24 @@ const StaffManagement: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     id: '',
-    name: '',
+    fullName: '',
+    email: '',
     staffId: '',
-    phone: '',
-    status: 'Active' as 'Active' | 'Inactive'
+    role: 'guard' as 'supervisor' | 'guard',
   });
 
-  const handleOpenModal = (staff?: Staff) => {
+  const handleOpenModal = (staff?: StaffMember) => {
     if (staff) {
-      setFormData({ ...staff });
+      setFormData({ 
+        id: staff.id, 
+        fullName: staff.fullName || '', 
+        email: staff.email, 
+        staffId: staff.staffId || '', 
+        role: (staff.role as 'supervisor' | 'guard') || 'guard'
+      });
       setIsEditing(true);
     } else {
-      setFormData({ id: '', name: '', staffId: '', phone: '', status: 'Active' });
+      setFormData({ id: '', fullName: '', email: '', staffId: '', role: 'guard' });
       setIsEditing(false);
     }
     setIsModalOpen(true);
@@ -62,19 +61,27 @@ const StaffManagement: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSaveStaff = (e: React.FormEvent) => {
+  const handleSaveStaff = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing) {
-      setStaffMembers(staffMembers.map(s => s.id === formData.id ? { ...formData, lastActive: s.lastActive } as Staff : s));
-    } else {
-      const newStaff: Staff = {
-        ...formData,
-        id: Math.random().toString(36).substr(2, 9),
-        lastActive: 'Never'
-      };
-      setStaffMembers([...staffMembers, newStaff]);
+    try {
+      if (isEditing) {
+        await updateMutation.mutateAsync({ 
+          id: formData.id, 
+          data: { fullName: formData.fullName, role: formData.role } 
+        });
+      } else {
+        await createMutation.mutateAsync({
+          fullName: formData.fullName,
+          email: formData.email,
+          staffId: formData.staffId,
+          role: formData.role,
+        });
+      }
+      handleCloseModal();
+    } catch (error) {
+      console.error('Failed to save staff:', error);
+      alert('Error saving staff member. Please check if email or Staff ID already exists.');
     }
-    handleCloseModal();
   };
 
   const handleDeleteClick = (id: string) => {
@@ -82,17 +89,16 @@ const StaffManagement: React.FC = () => {
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (staffToDelete) {
-      setStaffMembers(staffMembers.filter(s => s.id !== staffToDelete));
+      await deleteMutation.mutateAsync(staffToDelete);
       setStaffToDelete(null);
     }
   };
 
-  const toggleStatus = (id: string) => {
-    setStaffMembers(staffMembers.map(s => 
-      s.id === id ? { ...s, status: s.status === 'Active' ? 'Inactive' : 'Active' } : s
-    ));
+  const toggleStatus = () => {
+    // Backend doesn't have a specific status toggle, we could use update role or similar
+    // For now we'll skip this or implement if status is added to DB
   };
 
   return (
@@ -135,27 +141,23 @@ const StaffManagement: React.FC = () => {
                 <tr key={staff.id}>
                   <td>
                     <div className="staff-info-cell">
-                      <div className="staff-avatar">{staff.name.charAt(0)}</div>
-                      <span className="staff-name-bold">{staff.name}</span>
+                      <div className="staff-avatar">{(staff.fullName || staff.email).charAt(0)}</div>
+                      <span className="staff-name-bold">{staff.fullName || 'No Name'}</span>
                     </div>
                   </td>
                   <td className="font-mono">{staff.staffId}</td>
-                  <td>{staff.phone}</td>
+                  <td>{staff.email}</td>
                   <td>
-                    <button 
-                      className={`status-toggle-btn ${staff.status.toLowerCase()}`}
-                      onClick={() => toggleStatus(staff.id)}
-                    >
-                      <div className="toggle-dot" />
-                      {staff.status}
-                    </button>
+                    <span className={`status-badge synced`}>
+                      {staff.role}
+                    </span>
                   </td>
-                  <td className="text-muted">{staff.lastActive}</td>
+                  <td className="text-muted">{new Date(staff.createdAt).toLocaleDateString()}</td>
                   <td>
                     <DropdownMenu 
                       options={[
                         { label: 'Edit Staff', icon: <Edit2 size={14} />, onClick: () => handleOpenModal(staff) },
-                        { label: 'Deactivate', icon: <X size={14} />, onClick: () => toggleStatus(staff.id) },
+                        { label: 'Deactivate', icon: <X size={14} />, onClick: () => toggleStatus() },
                         { label: 'Delete Staff', icon: <Trash2 size={14} />, onClick: () => handleDeleteClick(staff.id), danger: true },
                       ]}
                     />
@@ -196,17 +198,34 @@ const StaffManagement: React.FC = () => {
 
               <form onSubmit={handleSaveStaff} className="modal-form">
                 <div className="form-group">
-                  <label htmlFor="name">Full Name</label>
+                  <label htmlFor="fullName">Full Name</label>
                   <div className="input-wrapper">
                     <User className="input-icon" />
                     <input 
                       type="text" 
-                      id="name" 
-                      name="name" 
+                      id="fullName" 
+                      name="fullName" 
                       required 
-                      value={formData.name}
+                      value={formData.fullName}
                       onChange={handleInputChange}
                       placeholder="e.g. Samuel Okon"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email Address</label>
+                  <div className="input-wrapper">
+                    <Mail className="input-icon" />
+                    <input 
+                      type="email" 
+                      id="email" 
+                      name="email" 
+                      required 
+                      disabled={isEditing}
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="samuel@example.com"
                     />
                   </div>
                 </div>
@@ -221,6 +240,7 @@ const StaffManagement: React.FC = () => {
                         id="staffId" 
                         name="staffId" 
                         required 
+                        disabled={isEditing}
                         value={formData.staffId}
                         onChange={handleInputChange}
                         placeholder="ID-001"
@@ -228,35 +248,20 @@ const StaffManagement: React.FC = () => {
                     </div>
                   </div>
                   <div className="form-group flex-1">
-                    <label htmlFor="phone">Phone Number</label>
-                    <div className="input-wrapper">
-                      <Phone className="input-icon" />
-                      <input 
-                        type="tel" 
-                        id="phone" 
-                        name="phone" 
-                        required 
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="080..."
-                      />
-                    </div>
+                    <label htmlFor="role">Role</label>
+                    <select 
+                      id="role" 
+                      name="role" 
+                      className="modal-select"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                    >
+                      <option value="supervisor">Supervisor</option>
+                      <option value="guard">Guard</option>
+                    </select>
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="status">Status</label>
-                  <select 
-                    id="status" 
-                    name="status" 
-                    className="modal-select"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
 
                 <div className="modal-footer">
                   <button type="button" className="btn-text" onClick={handleCloseModal}>Cancel</button>

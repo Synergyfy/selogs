@@ -9,7 +9,7 @@ export interface OCRResult {
   text: string;
   confidence: number;
   isCloud: boolean;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 /**

@@ -23,25 +23,24 @@ const ForgotPassword: React.FC = () => {
   const [passwords, setPasswords] = useState({ new: '', confirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [timer, setTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
+  const canResend = step === 'otp' && timer === 0;
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // OTP Timer Logic
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (step === 'otp' && timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    } else if (timer === 0) {
-      setCanResend(true);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [step, timer]);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStep('otp');
     setTimer(30);
-    setCanResend(false);
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -191,7 +190,7 @@ const ForgotPassword: React.FC = () => {
                     <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
                       Didn't get a code?{' '}
                       <button 
-                        onClick={() => { if(canResend) {setTimer(30); setCanResend(false); setOtp(['','','','','','']);} }} 
+                        onClick={() => { if(canResend) {setTimer(30); setOtp(['','','','','','']);} }} 
                         className="link-btn"
                         disabled={!canResend}
                       >

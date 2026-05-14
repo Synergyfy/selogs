@@ -5,74 +5,63 @@ import {
   Download, 
   Calendar, 
   User, 
-  ChevronLeft,
+  ChevronLeft, 
   ChevronRight,
   Trash2,
   ExternalLink,
   Edit2
 } from 'lucide-react';
+import { useEntriesList, useDeleteEntry } from '../hooks/dashboard/useEntries';
+import { useStaffList } from '../hooks/dashboard/useStaff';
+import type { EntriesParams } from '../services/EntriesService';
 import DropdownMenu from './DropdownMenu';
 import ConfirmModal from './ConfirmModal';
 import './EntriesPage.css';
 
-interface Entry {
-  id: string;
-  plate: string;
-  phone: string;
-  timestamp: string;
-  staff: string;
-  device: string;
-  status: 'IN' | 'OUT';
-  checkOutTime?: string;
-  duration?: string;
-}
-
 const EntriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [staffFilter, setStaffFilter] = useState('All Staff');
-  const [dateFilter, setDateFilter] = useState('Today');
+  const [dateFilter, setDateFilter] = useState('All Time');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
 
-  // Mock data
-  const [entries, setEntries] = useState<Entry[]>([
-    { id: '1', plate: 'ABC-123-XY', phone: '08012345678', timestamp: '2026-04-30 11:20 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-30 01:45 PM', duration: '2h 25m' },
-    { id: '2', plate: 'LAG-456-ZZ', phone: '08123456789', timestamp: '2026-04-30 10:45 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'IN' },
-    { id: '3', plate: 'KND-789-AA', phone: '07034567890', timestamp: '2026-04-30 09:15 AM', staff: 'John Doe', device: 'Tab-02', status: 'OUT', checkOutTime: '2026-04-30 12:30 PM', duration: '3h 15m' },
-    { id: '4', plate: 'PHC-321-BB', phone: '09045678901', timestamp: '2026-04-29 04:30 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-29 06:10 PM', duration: '1h 40m' },
-    { id: '5', plate: 'ABJ-654-CC', phone: '08056789012', timestamp: '2026-04-29 02:10 PM', staff: 'John Doe', device: 'Tab-02', status: 'IN' },
-    { id: '6', plate: 'ENU-987-DD', phone: '08167890123', timestamp: '2026-04-29 11:05 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-29 03:20 PM', duration: '4h 15m' },
-    { id: '7', plate: 'BEN-159-EE', phone: '07078901234', timestamp: '2026-04-28 05:50 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-28 07:05 PM', duration: '1h 15m' },
-    { id: '8', plate: 'KDY-753-FF', phone: '09089012345', timestamp: '2026-04-28 03:20 PM', staff: 'John Doe', device: 'Tab-02', status: 'OUT', checkOutTime: '2026-04-28 05:00 PM', duration: '1h 40m' },
-    { id: '9', plate: 'LND-246-GG', phone: '08011122233', timestamp: '2026-04-28 11:30 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'IN' },
-    { id: '10', plate: 'KWA-135-HH', phone: '07033344455', timestamp: '2026-04-27 04:45 PM', staff: 'Mary Jane', device: 'Phone-A', status: 'OUT', checkOutTime: '2026-04-27 06:00 PM', duration: '1h 15m' },
-    { id: '11', plate: 'OYO-864-II', phone: '09055566677', timestamp: '2026-04-27 02:20 PM', staff: 'John Doe', device: 'Tab-02', status: 'IN' },
-    { id: '12', plate: 'OGU-246-JJ', phone: '08077788899', timestamp: '2026-04-27 10:10 AM', staff: 'Samuel Okon', device: 'Tab-01', status: 'OUT', checkOutTime: '2026-04-27 01:15 PM', duration: '3h 05m' },
-  ]);
+  // API Hooks
+  const { data: staffMembers = [] } = useStaffList();
+  
+  const entriesParams = useMemo(() => {
+    const params: EntriesParams = {
+      page: currentPage,
+      limit: itemsPerPage,
+      plateNumber: searchQuery || undefined,
+    };
 
-  const filteredEntries = useMemo(() => {
-    return entries.filter(entry => {
-      const matchesSearch = entry.plate.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStaff = staffFilter === 'All Staff' || entry.staff === staffFilter;
-      
-      let matchesDate = true;
-      if (dateFilter === 'Today') matchesDate = entry.timestamp.includes('2026-04-30');
-      else if (dateFilter === 'Yesterday') matchesDate = entry.timestamp.includes('2026-04-29');
+    if (staffFilter !== 'All Staff') {
+      const selectedStaff = staffMembers.find(s => s.fullName === staffFilter || s.email === staffFilter);
+      if (selectedStaff) params.staffId = selectedStaff.id;
+    }
 
-      return matchesSearch && matchesStaff && matchesDate;
-    });
-  }, [searchQuery, staffFilter, dateFilter, entries]);
+    if (dateFilter === 'Today') {
+      params.startDate = new Date().toISOString().split('T')[0];
+    } else if (dateFilter === 'Yesterday') {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      params.startDate = yesterday.toISOString().split('T')[0];
+      params.endDate = yesterday.toISOString().split('T')[0];
+    }
 
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
-  const paginatedEntries = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredEntries.slice(start, start + itemsPerPage);
-  }, [filteredEntries, currentPage, itemsPerPage]);
+    return params;
+  }, [currentPage, searchQuery, staffFilter, dateFilter, staffMembers]);
+
+  const { data: entriesData } = useEntriesList(entriesParams);
+  const deleteMutation = useDeleteEntry();
+
+  const entries = entriesData?.data || [];
+  const totalEntries = entriesData?.total || 0;
+  const totalPages = entriesData?.lastPage || 0;
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -85,27 +74,25 @@ const EntriesPage: React.FC = () => {
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (entryToDelete) {
-      setEntries(entries.filter(e => e.id !== entryToDelete));
+      await deleteMutation.mutateAsync(entryToDelete);
       setEntryToDelete(null);
     }
   };
 
   const handleExport = () => {
-    if (filteredEntries.length === 0) return;
+    if (entries.length === 0) return;
 
-    const headers = ['Plate Number', 'Phone Number', 'Check-In', 'Check-Out', 'Duration', 'Staff Member', 'Device', 'Status'];
+    const headers = ['Plate Number', 'Phone Number', 'Check-In', 'Check-Out', 'Staff Member', 'Status'];
     const csvContent = [
       headers.join(','),
-      ...filteredEntries.map(entry => [
-        `"${entry.plate}"`,
-        `"${entry.phone || ''}"`,
-        `"${entry.timestamp}"`,
-        `"${entry.checkOutTime || '—'}"`,
-        `"${entry.duration || 'Active'}"`,
-        `"${entry.staff}"`,
-        `"${entry.device}"`,
+      ...entries.map(entry => [
+        `"${entry.plateNumber}"`,
+        `"${entry.phoneNumber || ''}"`,
+        `"${new Date(entry.checkInTime).toLocaleString()}"`,
+        `"${entry.checkOutTime ? new Date(entry.checkOutTime).toLocaleString() : '—'}"`,
+        `"${entry.checkInStaffName || ''}"`,
         `"${entry.status}"`
       ].join(','))
     ].join('\n');
@@ -161,13 +148,15 @@ const EntriesPage: React.FC = () => {
               setCurrentPage(1);
             }}>
               <option value="All Staff">All Staff</option>
-              <option value="Samuel Okon">Samuel Okon</option>
-              <option value="John Doe">John Doe</option>
-              <option value="Mary Jane">Mary Jane</option>
+              {staffMembers.map(s => (
+                <option key={s.id} value={s.fullName || s.email}>
+                  {s.fullName || s.email}
+                </option>
+              ))}
             </select>
           </div>
 
-          <button className="btn-export" onClick={handleExport} disabled={filteredEntries.length === 0}>
+          <button className="btn-export" onClick={handleExport} disabled={entries.length === 0}>
             <Download size={16} />
             <span>Export CSV</span>
           </button>
@@ -195,24 +184,24 @@ const EntriesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedEntries.length > 0 ? (
-                paginatedEntries.map((entry) => (
+              {entries.length > 0 ? (
+                entries.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="plate-cell">{entry.plate}</td>
-                    <td>{entry.phone || '—'}</td>
-                    <td>{entry.timestamp}</td>
-                    <td>{entry.checkOutTime || '—'}</td>
+                    <td className="plate-cell">{entry.plateNumber}</td>
+                    <td>{entry.phoneNumber || '—'}</td>
+                    <td>{new Date(entry.checkInTime).toLocaleString()}</td>
+                    <td>{entry.checkOutTime ? new Date(entry.checkOutTime).toLocaleString() : '—'}</td>
                     <td>
-                      {entry.duration ? (
-                        <span style={{ fontWeight: 600 }}>{entry.duration}</span>
+                      {entry.status === 'OUT' ? (
+                        <span style={{ fontWeight: 600 }}>Completed</span>
                       ) : (
                         <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '12px' }}>Active</span>
                       )}
                     </td>
                     <td>
                       <div className="staff-cell">
-                        <div className="staff-avatar-mini">{entry.staff.charAt(0)}</div>
-                        {entry.staff}
+                        <div className="staff-avatar-mini">{(entry.checkInStaffName || 'S').charAt(0)}</div>
+                        {entry.checkInStaffName}
                       </div>
                     </td>
                     <td>
@@ -244,7 +233,7 @@ const EntriesPage: React.FC = () => {
 
         <div className="table-pagination">
           <p className="pagination-info">
-            Showing {filteredEntries.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredEntries.length)} of {filteredEntries.length} entries
+            Showing {entries.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries} entries
           </p>
           <div className="pagination-btns">
             <button 

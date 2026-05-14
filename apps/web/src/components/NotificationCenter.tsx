@@ -23,7 +23,7 @@ interface NotificationCenterProps {
 
 const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, onClose, orgId }) => {
   const notifications = useLiveQuery(() => {
-    let query = db.notifications.orderBy('timestamp').reverse();
+    const query = db.notifications.orderBy('timestamp').reverse();
     if (orgId) {
       return query.filter(n => n.orgId === orgId).toArray();
     }

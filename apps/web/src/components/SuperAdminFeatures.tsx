@@ -18,8 +18,7 @@ import {
   Users,
   MapPin,
   PlusCircle,
-  MinusCircle,
-  CheckCircle2
+  MinusCircle
 } from 'lucide-react';
 import { useAddons } from '../hooks/super-admin/useAddons';
 import './Dashboard.css';
@@ -35,7 +34,7 @@ const IconMap: Record<string, React.ReactNode> = {
 };
 
 const SuperAdminFeatures: React.FC = () => {
-  const { addons, isLoading, updateAddon, deleteAddon, createAddon, isUpdating } = useAddons(true);
+  const { addons, isLoading, updateAddon, deleteAddon, createAddon } = useAddons(true);
   
   // Drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

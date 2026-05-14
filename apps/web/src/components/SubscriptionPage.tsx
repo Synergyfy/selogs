@@ -10,41 +10,44 @@ import {
   Users,
   Smartphone,
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+import { useMySubscription } from '../hooks/dashboard/useSubscription';
 import './Dashboard.css';
 
 const SubscriptionPage: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const { data: subscription, isLoading: isLoadingSub } = useMySubscription();
 
   const plans = [
     {
-      id: 'Starter',
+      id: 'starter',
       name: 'Starter',
       price: billingCycle === 'monthly' ? 'Free' : 'Free',
       desc: 'Basic security for small locations.',
       icon: <Zap size={24} />,
       features: ['Up to 2 Locations', '100 Entries/mo', 'Email Support'],
-      current: false
+      current: !subscription || subscription.planName?.toLowerCase() === 'starter',
     },
     {
-      id: 'Business',
+      id: 'business',
       name: 'Business',
       price: billingCycle === 'monthly' ? '₦15,000' : '₦144,000',
       desc: 'Advanced features for growing teams.',
       icon: <Rocket size={24} />,
       features: ['Up to 10 Locations', 'Unlimited Entries', 'Priority Support', 'Custom Branding'],
-      current: true,
+      current: subscription?.planName?.toLowerCase() === 'business',
       popular: true
     },
     {
-      id: 'Enterprise',
+      id: 'enterprise',
       name: 'Enterprise',
       price: 'Custom',
       desc: 'Maximum power for large operations.',
       icon: <Crown size={24} />,
       features: ['Unlimited Locations', 'API Access', '24/7 Dedicated Support', 'Multi-branch Audit'],
-      current: false
+      current: subscription?.planName?.toLowerCase() === 'enterprise',
     }
   ];
 
@@ -144,17 +147,28 @@ const SubscriptionPage: React.FC = () => {
           <div className="card-header">
             <h3>Subscription Status</h3>
           </div>
+          {isLoadingSub ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+              <Loader2 size={24} className="spin" />
+            </div>
+          ) : (
           <div className="v-stat" style={{ background: 'var(--bg-input)', padding: '20px', borderRadius: '16px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <ShieldCheck className="text-gradient" size={24} />
-              <strong style={{ fontSize: '18px' }}>Business Plan</strong>
+              <strong style={{ fontSize: '18px' }}>{subscription?.planName || 'No Active Plan'}</strong>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Renewing on <strong>June 01, 2026</strong>.</p>
+            <span className={`status-badge ${subscription?.status === 'active' ? 'synced' : 'pending'}`} style={{ marginBottom: '12px', display: 'inline-block' }}>
+              {(subscription?.status || 'inactive').toUpperCase()}
+            </span>
+            {subscription?.currentPeriodEnd && (
+              <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Renewing on <strong>{new Date(subscription.currentPeriodEnd).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: '2-digit' })}</strong>.</p>
+            )}
             <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
               <button className="btn-auth-outline" style={{ borderStyle: 'solid', fontSize: '13px', flex: 1 }}>Manage Billing</button>
               <button className="btn-auth-outline" style={{ borderStyle: 'solid', fontSize: '13px', flex: 1, color: 'var(--danger)' }}>Cancel</button>
             </div>
           </div>
+          )}
           
           <div style={{ padding: '16px', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.1)' }}>
              <h4 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>

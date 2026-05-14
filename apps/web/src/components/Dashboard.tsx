@@ -10,37 +10,26 @@ import {
   ArrowUpRight,
   Clock
 } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../services/db';
+import { useDashboardOverview, useDashboardTrends } from '../hooks/dashboard/useDashboardStats';
+import { useEntriesList } from '../hooks/dashboard/useEntries';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  // Live Queries
-  const todayCount = useLiveQuery(() => {
-    const startOfDay = new Date().setHours(0, 0, 0, 0);
-    return db.entries.where('timestamp').above(startOfDay).count();
-  }) || 0;
-
-  const weeklyCount = useLiveQuery(() => {
-    const startOfWeek = new Date().setDate(new Date().getDate() - 7);
-    return db.entries.where('timestamp').above(startOfWeek).count();
-  }) || 0;
-
-  const activeStaff = useLiveQuery(() => db.staff.where('status').equals('active').count()) || 0;
-  const deviceCount = useLiveQuery(() => db.branches.count()) || 0; // Temporary fallback
-
-  const liveEntries = useLiveQuery(() => 
-    db.entries.orderBy('timestamp').reverse().limit(5).toArray()
-  ) || [];
+  // API Hooks
+  const { data: overview } = useDashboardOverview();
+  const { data: trends } = useDashboardTrends(7);
+  const { data: entriesData } = useEntriesList({ limit: 5 });
 
   const stats = [
-    { title: "Today's Entries", value: todayCount.toString(), change: "+12%", icon: <Car size={24} />, color: "indigo" },
-    { title: "Weekly Total", value: weeklyCount.toString(), change: "+8%", icon: <Calendar size={24} />, color: "emerald" },
-    { title: "Active Staff", value: activeStaff.toString(), change: "Live", icon: <Users size={24} />, color: "blue" },
-    { title: "System Nodes", value: deviceCount.toString(), change: "Online", icon: <Smartphone size={24} />, color: "amber" },
+    { title: "Today's Entries", value: overview?.todayEntries.toString() || '0', change: "Live", icon: <Car size={24} />, color: "indigo" },
+    { title: "Active Vehicles", value: overview?.activeVehicles.toString() || '0', change: "Inside", icon: <Calendar size={24} />, color: "emerald" },
+    { title: "Active Staff", value: overview?.activeStaff.toString() || '0', change: "On Shift", icon: <Users size={24} />, color: "blue" },
+    { title: "System Nodes", value: overview?.activeDevices.toString() || '0', change: "Online", icon: <Smartphone size={24} />, color: "amber" },
   ];
+
+  const liveEntries = entriesData?.data || [];
 
   return (
     <div className="dashboard-overview">
@@ -101,13 +90,13 @@ const Dashboard: React.FC = () => {
                     <td className="text-muted">
                       <div className="flex-center gap-4">
                         <Clock size={14} />
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(entry.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </td>
-                    <td>{entry.staffName || 'System'}</td>
+                    <td>{entry.checkInStaffName || 'System'}</td>
                     <td>
-                      <span className={`status-badge ${entry.synced ? 'synced' : 'pending'}`}>
-                        {entry.synced ? 'Synced' : 'Local'}
+                      <span className={`status-badge ${entry.status === 'IN' ? 'pending' : 'synced'}`}>
+                        {entry.status}
                       </span>
                     </td>
                   </tr>
@@ -139,16 +128,24 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="chart-placeholder">
             <div className="chart-bars">
-              {[40, 70, 45, 90, 65, 80, 50].map((height, i) => (
+              {(trends || []).map((t, i) => (
                 <div 
                   key={i} 
                   className="chart-bar" 
-                  style={{ height: `${height}%` }}
+                  style={{ height: `${Math.min(100, (t.count / (Math.max(...(trends?.map(tr => tr.count) || [1]))) * 100))}%` }}
                 />
+              ))}
+              {(!trends || trends.length === 0) && [40, 70, 45, 90, 65, 80, 50].map((height, i) => (
+                <div key={i} className="chart-bar" style={{ height: `${height}%` }} />
               ))}
             </div>
             <div className="chart-labels">
-              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+              {(trends || []).map((t, i) => (
+                <span key={i}>{new Date(t.date).toLocaleDateString([], { weekday: 'narrow' })}</span>
+              ))}
+              {(!trends || trends.length === 0) && ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                <span key={i}>{day}</span>
+              ))}
             </div>
           </div>
         </motion.div>

@@ -1,18 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/auth.service';
-import type { User, Role } from '../services/auth.service';
-
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  role: Role | null;
-  logout: () => void;
-  checkAuth: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import type { User } from '../services/auth.service';
+import { AuthContext } from './AuthContextObject';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
@@ -26,25 +16,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('is_logged_in');
     localStorage.removeItem('user_role');
     setIsLoggedIn(false);
     queryClient.setQueryData(['me'], null);
     queryClient.clear();
-  };
+  }, [queryClient]);
 
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     setIsLoggedIn(!!localStorage.getItem('is_logged_in'));
     refetch();
-  };
+  }, [refetch]);
 
   // If logged in but query failed (e.g. 401), logout
   useEffect(() => {
     if (isError && isLoggedIn) {
       logout();
     }
-  }, [isError, isLoggedIn]);
+  }, [isError, isLoggedIn, logout]);
 
   return (
     <AuthContext.Provider value={{ 
@@ -58,12 +48,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

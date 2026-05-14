@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { History as HistoryIcon, ArrowLeft, Clock, User, Hash, CheckCircle2, Circle, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, type VehicleEntry } from '../services/db';
@@ -14,14 +14,12 @@ const History: React.FC<HistoryProps> = ({ onBack }) => {
     db.entries.orderBy('timestamp').reverse().toArray()
   ) || [];
 
-  const [filteredEntries, setFilteredEntries] = useState<VehicleEntry[]>([]);
-  const [loading] = useState(false); 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'synced' | 'unsynced'>('all');
   const [showSearch, setShowSearch] = useState(false);
 
-  // Apply search and filter
-  useEffect(() => {
+  // Apply search and filter via useMemo to avoid cascading renders
+  const filteredEntries = useMemo(() => {
     let result = [...entries];
 
     // Apply search
@@ -42,7 +40,7 @@ const History: React.FC<HistoryProps> = ({ onBack }) => {
       result = result.filter(e => !e.synced);
     }
 
-    setFilteredEntries(result);
+    return result;
   }, [searchQuery, filterMode, entries]);
 
   // Group entries by date
@@ -127,11 +125,7 @@ const History: React.FC<HistoryProps> = ({ onBack }) => {
       </div>
 
       {/* Content */}
-      {loading ? (
-        <div style={{ padding: '60px 0' }}>
-          <div className="spinner"></div>
-        </div>
-      ) : filteredEntries.length === 0 ? (
+      {filteredEntries.length === 0 ? (
         <div className="history-empty">
           <div className="history-empty-icon">
             {searchQuery ? <Search size={48} /> : <HistoryIcon size={48} />}

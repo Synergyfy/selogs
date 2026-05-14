@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Search, ArrowLeft, Clock, Car, LogOut, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ArrowLeft, Clock, Car, LogOut, CheckCircle2 } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type VehicleEntry } from '../services/db';
 import './CheckOut.css';
 
@@ -10,8 +11,6 @@ interface CheckOutProps {
   onCheckOutComplete: () => void;
   onCancel: () => void;
 }
-
-import { useLiveQuery } from 'dexie-react-hooks';
 
 const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutComplete, onCancel }) => {
   const activeVehicles = useLiveQuery(() => 
@@ -25,6 +24,12 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleEntry | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000 * 60);
+    return () => clearInterval(timer);
+  }, []);
 
   const filteredVehicles = activeVehicles.filter(v => 
     v.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -32,7 +37,7 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
   );
 
   const calculateDuration = (checkInTime: number) => {
-    const diff = Date.now() - checkInTime;
+    const diff = now - checkInTime;
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
@@ -48,10 +53,10 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
     setIsProcessing(true);
     
     try {
-      const now = Date.now();
+      const checkoutNow = Date.now();
       await db.entries.update(selectedVehicle.id, {
         status: 'OUT',
-        checkOutTimestamp: now,
+        checkOutTimestamp: checkoutNow,
         checkOutStaffId: staffId,
         checkOutStaffName: staffName,
         synced: false 
@@ -216,4 +221,3 @@ const CheckOut: React.FC<CheckOutProps> = ({ staffId, staffName, onCheckOutCompl
 };
 
 export default CheckOut;
-

@@ -31,7 +31,7 @@ export interface CreateAddonDto {
   customFeatures?: string[];
 }
 
-export interface UpdateAddonDto extends Partial<CreateAddonDto> {}
+export type UpdateAddonDto = Partial<CreateAddonDto>;
 
 export const addonsService = {
   async getAllAddons(): Promise<Addon[]> {

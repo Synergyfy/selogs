@@ -19,7 +19,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import NotificationCenter from './NotificationCenter';

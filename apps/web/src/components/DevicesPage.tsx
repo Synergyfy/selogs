@@ -13,36 +13,28 @@ import {
   Edit2,
   Lock,
   Plus,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import DropdownMenu from './DropdownMenu';
 import ConfirmModal from './ConfirmModal';
+import { useDevicesList, useDeleteDevice } from '../hooks/dashboard/useDevices';
+import { useBranchesList } from '../hooks/dashboard/useBranches';
 import './DevicesPage.css';
 
-interface Device {
-  id: string;
-  name: string;
-  type: 'Phone' | 'Tablet' | 'Laptop';
-  deviceId: string;
-  status: 'Online' | 'Offline';
-  lastSync: string;
-  location: string;
-}
-
 const DevicesPage: React.FC = () => {
+  const { data: devices = [], isLoading } = useDevicesList();
+  const { data: branches = [] } = useBranchesList();
+  const deleteMutation = useDeleteDevice();
+
   const [copied, setCopied] = useState(false);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deviceToUnlink, setDeviceToUnlink] = useState<string | null>(null);
-  const orgCode = 'VGRD-8821-X';
 
-  const [devices, setDevices] = useState<Device[]>([
-    { id: '1', name: 'Front Gate Tab', type: 'Tablet', deviceId: 'DEV-A982-11', status: 'Online', lastSync: '2 mins ago', location: 'Main Entrance' },
-    { id: '2', name: 'Security Phone 1', type: 'Phone', deviceId: 'DEV-B212-45', status: 'Online', lastSync: '15 mins ago', location: 'Roving Patrol' },
-    { id: '3', name: 'Back Exit Tab', type: 'Tablet', deviceId: 'DEV-C334-89', status: 'Offline', lastSync: '4 hours ago', location: 'Service Entrance' },
-    { id: '4', name: 'Main Office PC', type: 'Laptop', deviceId: 'DEV-D001-02', status: 'Online', lastSync: 'Just now', location: 'Admin Desk' },
-  ]);
+  // Use first branch code as org code for linking instructions
+  const orgCode = branches[0]?.code || 'Loading...';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(orgCode);
@@ -52,10 +44,7 @@ const DevicesPage: React.FC = () => {
 
   const handleRefreshSync = (id: string) => {
     setRefreshingId(id);
-    setTimeout(() => {
-      setRefreshingId(null);
-      setDevices(prev => prev.map(d => d.id === id ? { ...d, lastSync: 'Just now', status: 'Online' } : d));
-    }, 1500);
+    setTimeout(() => setRefreshingId(null), 1500);
   };
 
   const handleUnlinkClick = (id: string) => {
@@ -63,19 +52,18 @@ const DevicesPage: React.FC = () => {
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deviceToUnlink) {
-      setDevices(devices.filter(d => d.id !== deviceToUnlink));
+      await deleteMutation.mutateAsync(deviceToUnlink);
       setDeviceToUnlink(null);
     }
   };
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'Phone': return <Smartphone size={24} />;
-      case 'Tablet': return <Tablet size={24} />;
-      default: return <Activity size={24} />;
-    }
+  const getIcon = (name?: string) => {
+    const lower = (name || '').toLowerCase();
+    if (lower.includes('phone') || lower.includes('mobile')) return <Smartphone size={24} />;
+    if (lower.includes('tab') || lower.includes('tablet')) return <Tablet size={24} />;
+    return <Activity size={24} />;
   };
 
   return (
@@ -107,31 +95,36 @@ const DevicesPage: React.FC = () => {
         >
           <div className="stat-mini">
             <span className="stat-label">Total Connected</span>
-            <span className="stat-value-large">{devices.length}</span>
+            <span className="stat-value-large">{isLoading ? '—' : devices.length}</span>
           </div>
           <div className="stat-mini">
-            <span className="stat-label">Currently Online</span>
-            <span className="stat-value-large emerald">{devices.filter(d => d.status === 'Online').length}</span>
+            <span className="stat-label">Registered Branches</span>
+            <span className="stat-value-large emerald">{branches.length}</span>
           </div>
         </motion.div>
       </div>
 
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '80px' }}>
+          <Loader2 size={32} className="spin" />
+        </div>
+      ) : (
       <div className="device-cards-grid">
         {devices.map((device, index) => (
           <motion.div 
             key={device.id}
-            className={`device-card ${device.status.toLowerCase()}`}
+            className="device-card online"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
             <div className="device-card-header">
-              <div className={`device-icon-box ${device.type.toLowerCase()}`}>
-                {getIcon(device.type)}
+              <div className="device-icon-box phone">
+                {getIcon(device.name)}
               </div>
               <div className="device-status-indicator">
-                <span className={`status-dot ${device.status.toLowerCase()}`} />
-                {device.status}
+                <span className="status-dot online" />
+                Active
               </div>
               <DropdownMenu 
                 options={[
@@ -144,17 +137,17 @@ const DevicesPage: React.FC = () => {
             </div>
 
             <div className="device-card-body">
-              <h3 className="device-name">{device.name}</h3>
+              <h3 className="device-name">{device.name || device.deviceId}</h3>
               <p className="device-id-mono">{device.deviceId}</p>
               
               <div className="device-meta-row">
                 <div className="meta-item">
                   <Clock size={14} />
-                  <span>Synced {device.lastSync}</span>
+                  <span>{device.lastActive ? new Date(device.lastActive).toLocaleString() : 'Never synced'}</span>
                 </div>
                 <div className="meta-item">
                   <Activity size={14} />
-                  <span>{device.location}</span>
+                  <span>{device.branchName}</span>
                 </div>
               </div>
             </div>
@@ -193,6 +186,7 @@ const DevicesPage: React.FC = () => {
           <p>Scan code or enter manually</p>
         </motion.button>
       </div>
+      )}
 
       {/* Add Device Modal */}
       <AnimatePresence>

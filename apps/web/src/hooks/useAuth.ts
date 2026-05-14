@@ -1,61 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService } from '../services/auth.service';
-import type { LoginDto, SignupDto, User } from '../services/auth.service';
-import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContextObject';
 
 export const useAuth = () => {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
-  // Query to get current user profile
-  const userQuery = useQuery<User, Error>({
-    queryKey: ['me'],
-    queryFn: authService.getMe,
-    enabled: !!localStorage.getItem('is_logged_in'),
-    retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: (data: LoginDto) => authService.login(data),
-    onSuccess: (data) => {
-      localStorage.setItem('is_logged_in', 'true');
-      localStorage.setItem('user_role', data.user.role);
-      queryClient.setQueryData(['me'], data.user);
-      navigate('/dashboard');
-    },
-  });
-
-  // Signup mutation
-  const signupMutation = useMutation({
-    mutationFn: (data: SignupDto) => authService.signup(data),
-    onSuccess: (data) => {
-      localStorage.setItem('is_logged_in', 'true');
-      localStorage.setItem('user_role', data.user.role);
-      queryClient.setQueryData(['me'], data.user);
-      navigate('/dashboard');
-    },
-  });
-
-  const logout = () => {
-    localStorage.removeItem('is_logged_in');
-    localStorage.removeItem('user_role');
-    queryClient.setQueryData(['me'], null);
-    queryClient.invalidateQueries({ queryKey: ['me'] });
-    navigate('/login');
-  };
-
-  return {
-    user: userQuery.data,
-    isLoading: userQuery.isLoading,
-    isError: userQuery.isError,
-    login: loginMutation.mutate,
-    isLoggingIn: loginMutation.isPending,
-    loginError: loginMutation.error,
-    signup: signupMutation.mutate,
-    isSigningUp: signupMutation.isPending,
-    signupError: signupMutation.error,
-    logout,
-  };
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

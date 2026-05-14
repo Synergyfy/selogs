@@ -291,29 +291,20 @@ function App() {
     return saved || 'light';
   });
 
-  // Calculate effective theme
-  const getEffectiveTheme = () => {
-    if (themeMode === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return themeMode;
-  };
-
-  const [effectiveTheme, setEffectiveTheme] = useState<'light'|'dark'>(getEffectiveTheme());
+  const [systemTheme, setSystemTheme] = useState<'light'|'dark'>(() => 
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  );
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-      if (themeMode === 'system') {
-        setEffectiveTheme(mediaQuery.matches ? 'dark' : 'light');
-      }
-    };
+    const handleChange = () => setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [themeMode]);
+  }, []);
+
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
 
   useEffect(() => {
-    setEffectiveTheme(getEffectiveTheme());
     localStorage.setItem('themeMode', themeMode);
   }, [themeMode]);
 

@@ -75,7 +75,7 @@ const SuperAdminNotifications: React.FC = () => {
                 className="modal-select" 
                 style={{ background: 'var(--bg-input)' }}
                 value={priority}
-                onChange={(e: any) => setPriority(e.target.value)}
+                onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
               >
                 <option value="low">Low - Informational</option>
                 <option value="medium">Medium - Important</option>

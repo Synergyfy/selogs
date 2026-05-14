@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Building2, 
@@ -14,6 +14,7 @@ import {
   Globe,
   Settings
 } from 'lucide-react';
+import { useOrgProfile, useUpdateOrgProfile, useOrgBranding, useUpdateOrgBranding, useOrgSystemSettings, useUpdateOrgSystemSettings } from '../hooks/dashboard/useSettings';
 import './SettingsPage.css';
 
 type Tab = 'general' | 'branding' | 'mode' | 'system';
@@ -23,10 +24,18 @@ const SettingsPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Form States
-  const [orgName, setOrgName] = useState('VGuard Security Solutions');
-  const [location, setLocation] = useState('Lagos, Nigeria');
-  const [systemName, setSystemName] = useState('VGuard System');
+  // API hooks
+  const { data: profileData } = useOrgProfile();
+  const { data: brandingData } = useOrgBranding();
+  const { data: systemData } = useOrgSystemSettings();
+  const updateProfile = useUpdateOrgProfile();
+  const updateBranding = useUpdateOrgBranding();
+  const updateSystem = useUpdateOrgSystemSettings();
+
+  // Form States (initialized from API, updated locally)
+  const [orgName, setOrgName] = useState('');
+  const [location, setLocation] = useState('');
+  const [systemName, setSystemName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [selectedMode, setSelectedMode] = useState<'hotel' | 'estate' | 'security'>('security');
   
@@ -35,13 +44,46 @@ const SettingsPage: React.FC = () => {
   const [enableNotes, setEnableNotes] = useState(true);
   const [ocrOptimization, setOcrOptimization] = useState(false);
 
-  const handleSave = () => {
+  // Sync API data into form when loaded
+  useEffect(() => {
+    if (profileData) {
+      setOrgName(profileData.name || '');
+      setLocation(profileData.location || '');
+      setSystemName(profileData.systemName || '');
+    }
+  }, [profileData]);
+
+  useEffect(() => {
+    if (brandingData) {
+      setPrimaryColor(brandingData.primaryColor || '#6366f1');
+    }
+  }, [brandingData]);
+
+  useEffect(() => {
+    if (systemData) {
+      setRequirePhone(systemData.requirePhone ?? true);
+      setEnableNotes(systemData.enableNotes ?? true);
+      setOcrOptimization(systemData.ocrOptimization ?? false);
+      setSelectedMode(systemData.mode ?? 'security');
+    }
+  }, [systemData]);
+
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await Promise.all([
+        updateProfile.mutateAsync({ name: orgName, location, systemName }),
+        updateBranding.mutateAsync({ primaryColor }),
+        updateSystem.mutateAsync({ requirePhone, enableNotes, ocrOptimization, mode: selectedMode }),
+      ]);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-    }, 1500);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      alert('Failed to save settings. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const tabs = [
@@ -211,7 +253,7 @@ const SettingsPage: React.FC = () => {
                     <div 
                       key={mode.id}
                       className={`mode-card-mini ${selectedMode === mode.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedMode(mode.id as any)}
+                      onClick={() => setSelectedMode(mode.id as 'hotel' | 'estate' | 'security')}
                     >
                       <div className="mode-icon-circle">
                         {mode.icon}
