@@ -3,7 +3,6 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useAuthActions } from '../hooks/useAuthActions';
-import { Role } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
 
 const CreateAccount: React.FC = () => {
@@ -22,7 +21,7 @@ const CreateAccount: React.FC = () => {
 
   // Redirect once authenticated
   if (isAuthenticated && role) {
-    return <Navigate to={role === Role.super_admin ? '/super-admin' : '/dashboard'} replace />;
+    return <Navigate to={role === 'super_admin' ? '/super-admin' : '/dashboard'} replace />;
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -33,7 +32,7 @@ const CreateAccount: React.FC = () => {
     e.preventDefault();
     signup({
       ...formData,
-      role: Role.admin, // Default signup for admin
+      role: 'admin', // Default signup for admin
     });
   };
 

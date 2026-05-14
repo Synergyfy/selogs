@@ -165,9 +165,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
             
             <div className="user-profile-wrapper">
               <button className="user-profile" onClick={() => setIsProfileOpen(!isProfileOpen)}>
-                <div className="user-avatar">{user?.name?.substring(0, 2).toUpperCase() || 'AD'}</div>
+                <div className="user-avatar">{user?.fullName?.substring(0, 2).toUpperCase() || 'AD'}</div>
                 <div className="user-info hide-mobile">
-                  <span className="user-name">{user?.name || 'Admin User'}</span>
+                  <span className="user-name">{user?.fullName || 'Admin User'}</span>
                   <span className="user-role">{user?.role === 'admin' ? 'Organization Admin' : 'Staff Member'}</span>
                 </div>
                 <ChevronDown size={16} className={`dropdown-arrow ${isProfileOpen ? 'open' : ''}`} />

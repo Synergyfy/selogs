@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService, Role } from '../services/auth.service';
-import type { User } from '../services/auth.service';
+import { authService } from '../services/auth.service';
+import type { User, Role } from '../services/auth.service';
 
 interface AuthContextType {
   user: User | null;
@@ -16,35 +16,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem('is_logged_in'));
 
   const { data: user, isLoading, isError, refetch } = useQuery<User, Error>({
     queryKey: ['me'],
     queryFn: authService.getMe,
-    enabled: !!token,
+    enabled: isLoggedIn,
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const logout = () => {
-    localStorage.removeItem('access_token');
+    localStorage.removeItem('is_logged_in');
     localStorage.removeItem('user_role');
-    setToken(null);
+    setIsLoggedIn(false);
     queryClient.setQueryData(['me'], null);
     queryClient.clear();
   };
 
   const checkAuth = () => {
-    setToken(localStorage.getItem('access_token'));
+    setIsLoggedIn(!!localStorage.getItem('is_logged_in'));
     refetch();
   };
 
-  // If token exists but query failed (e.g. 401), logout
+  // If logged in but query failed (e.g. 401), logout
   useEffect(() => {
-    if (isError && token) {
+    if (isError && isLoggedIn) {
       logout();
     }
-  }, [isError, token]);
+  }, [isError, isLoggedIn]);
 
   return (
     <AuthContext.Provider value={{ 

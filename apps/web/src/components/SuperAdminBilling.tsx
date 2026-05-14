@@ -7,27 +7,45 @@ import {
   Download, 
   Filter,
   Search,
-  CreditCard,
   Building2,
   Calendar
 } from 'lucide-react';
 import './Dashboard.css';
 
+import { useGlobalRevenue } from '../hooks/super-admin/useGlobalRevenue';
+import { useGlobalInvoices } from '../hooks/super-admin/useGlobalInvoices';
+import { useGlobalStats } from '../hooks/super-admin/useGlobalStats';
+
 const SuperAdminBilling: React.FC = () => {
+  const { data: revenueData, isLoading: revenueLoading } = useGlobalRevenue();
+  const { data: invoicesData, isLoading: invoicesLoading } = useGlobalInvoices(1, 10);
+  const { data: statsData, isLoading: statsLoading } = useGlobalStats();
+
   const revenueStats = [
-    { title: "Total Revenue (MRR)", value: "₦4.2M", change: "+12.5%", icon: <DollarSign size={24} />, color: "emerald" },
-    { title: "Pending Payouts", value: "₦850k", change: "42 pending", icon: <CreditCard size={24} />, color: "indigo" },
-    { title: "Active Subs", value: "98", change: "72% growth", icon: <TrendingUp size={24} />, color: "blue" },
-    { title: "Average ARPU", value: "₦42,800", change: "+5% vs LY", icon: <Building2 size={24} />, color: "amber" },
+    { 
+      title: "Total Revenue", 
+      value: revenueLoading ? "..." : `₦${(revenueData?.totalRevenue || 0).toLocaleString()}`, 
+      change: "+12.5%", 
+      icon: <DollarSign size={24} />, 
+      color: "emerald" 
+    },
+    { 
+      title: "Active Subscriptions", 
+      value: statsLoading ? "..." : statsData?.activeSubscriptions.toString() || "0", 
+      change: "72% growth", 
+      icon: <TrendingUp size={24} />, 
+      color: "blue" 
+    },
+    { 
+      title: "Average ARPU", 
+      value: statsLoading && revenueLoading ? "..." : `₦${((revenueData?.totalRevenue || 0) / (statsData?.activeSubscriptions || 1)).toLocaleString()}`, 
+      change: "+5% vs LY", 
+      icon: <Building2 size={24} />, 
+      color: "amber" 
+    },
   ];
 
-  const transactions = [
-    { id: 'TX-9901', org: 'Sheraton Lagos', plan: 'Enterprise', amount: '₦150,000', status: 'Success', date: 'May 01, 2026' },
-    { id: 'TX-9892', org: 'Ocean View Estate', plan: 'Business', amount: '₦15,000', status: 'Success', date: 'Apr 30, 2026' },
-    { id: 'TX-9885', org: 'Eko Hotels & Suites', plan: 'Enterprise', amount: '₦150,000', status: 'Pending', date: 'Apr 28, 2026' },
-    { id: 'TX-9871', org: 'Victoria Court', plan: 'Starter', amount: '₦5,000', status: 'Failed', date: 'Apr 25, 2026' },
-    { id: 'TX-9860', org: 'Unity Security Ltd', plan: 'Business', amount: '₦15,000', status: 'Success', date: 'Apr 22, 2026' },
-  ];
+  const transactions = invoicesData?.items || [];
 
   return (
     <div className="dashboard-overview sa-theme">
@@ -93,13 +111,15 @@ const SuperAdminBilling: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
+              {invoicesLoading ? (
+                <tr><td colSpan={7} className="text-center p-24">Loading invoices...</td></tr>
+              ) : transactions.map((tx) => (
                 <tr key={tx.id}>
-                  <td className="font-mono" style={{ fontSize: '13px' }}>{tx.id}</td>
-                  <td className="font-bold">{tx.org}</td>
-                  <td>{tx.plan}</td>
-                  <td className="font-bold">{tx.amount}</td>
-                  <td className="text-muted">{tx.date}</td>
+                  <td className="font-mono" style={{ fontSize: '13px' }}>{tx.id.substring(0, 8).toUpperCase()}</td>
+                  <td className="font-bold">{tx.organization.name}</td>
+                  <td>N/A</td>
+                  <td className="font-bold">₦{tx.amount.toLocaleString()}</td>
+                  <td className="text-muted">{new Date(tx.createdAt).toLocaleDateString()}</td>
                   <td>
                     <span className={`status-badge ${tx.status.toLowerCase()}`}>
                       {tx.status}

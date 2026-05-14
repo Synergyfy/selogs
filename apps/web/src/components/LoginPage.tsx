@@ -6,11 +6,10 @@ import { useAuth } from '../context/AuthContext';
 import './AuthLayout.css';
 
 import { useAuthActions } from '../hooks/useAuthActions';
-import { Role } from '../services/auth.service';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const { login, isLoggingIn, loginError } = useAuthActions();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,7 +19,7 @@ const LoginPage: React.FC = () => {
 
   // Role-based redirection once authenticated
   if (isAuthenticated && role) {
-    return <Navigate to={role === Role.super_admin ? '/super-admin' : '/dashboard'} replace />;
+    return <Navigate to={role === 'super_admin' ? '/super-admin' : '/dashboard'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

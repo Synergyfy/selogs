@@ -79,4 +79,18 @@ export class SettingsController {
   ) {
     return this.settingsService.updateSystemSettings(organizationId, dto);
   }
+
+  @ApiOperation({ summary: 'Get global platform settings (Super Admin)' })
+  @Roles(Role.super_admin)
+  @Get('global')
+  async getGlobalSettings() {
+    return this.settingsService.getGlobalSettings();
+  }
+
+  @ApiOperation({ summary: 'Update global platform settings (Super Admin)' })
+  @Roles(Role.super_admin)
+  @Patch('global')
+  async updateGlobalSettings(@Body() dto: any) {
+    return this.settingsService.updateGlobalSettings(dto);
+  }
 }

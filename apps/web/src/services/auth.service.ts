@@ -1,11 +1,6 @@
 import api from './api';
 
-export enum Role {
-  admin = 'admin',
-  supervisor = 'supervisor',
-  guard = 'guard',
-  super_admin = 'super_admin'
-}
+export type Role = 'admin' | 'supervisor' | 'guard' | 'super_admin';
 
 export interface User {
   id: string;
@@ -18,10 +13,12 @@ export interface User {
 
 export interface LoginResponse {
   access_token: string;
+  user: User;
 }
 
 export interface SignupResponse {
   access_token: string;
+  user: User;
 }
 
 export interface LoginDto {

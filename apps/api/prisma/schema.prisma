@@ -288,3 +288,37 @@ model User {
   @@map("users")
 }
 
+model GlobalSettings {
+  id                String   @id @default("global")
+  maintenanceMode   Boolean  @default(false) @map("maintenance_mode")
+  platformName      String   @default("VGuard") @map("platform_name")
+  contactEmail      String?  @map("contact_email")
+  supportPhone      String?  @map("support_phone")
+  allowNewSignups   Boolean  @default(true) @map("allow_new_signups")
+  
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("global_settings")
+}
+
+model Addon {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  description  String?
+  monthlyPrice Float    @map("monthly_price")
+  icon         String   @default("Package")
+  color        String   @default("blue")
+  isActive     Boolean  @default(true) @map("is_active")
+  unitsSold    Int      @default(0) @map("units_sold")
+  revenue      Float    @default(0)
+
+  branchLimitInc Int      @default(0) @map("branch_limit_inc")
+  staffLimitInc  Int      @default(0) @map("staff_limit_inc")
+  deviceLimitInc Int      @default(0) @map("device_limit_inc")
+  customFeatures String[] @map("custom_features")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("addons")
+}

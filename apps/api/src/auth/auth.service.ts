@@ -158,7 +158,18 @@ export class AuthService {
       newUser.branchId,
     );
     await this.updateRtHash(newUser.id, tokens.refresh_token);
-    return tokens;
+    
+    return {
+      tokens,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        fullName: newUser.fullName,
+        organizationId: newUser.organizationId,
+        branchId: newUser.branchId,
+      },
+    };
   }
 
   /**
@@ -187,7 +198,18 @@ export class AuthService {
       user.branchId,
     );
     await this.updateRtHash(user.id, tokens.refresh_token);
-    return tokens;
+    
+    return {
+      tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.fullName,
+        organizationId: user.organizationId,
+        branchId: user.branchId,
+      },
+    };
   }
 
   /**
@@ -231,7 +253,18 @@ export class AuthService {
       user.branchId,
     );
     await this.updateRtHash(user.id, tokens.refresh_token);
-    return tokens;
+    
+    return {
+      tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.fullName,
+        organizationId: user.organizationId,
+        branchId: user.branchId,
+      },
+    };
   }
 
   /**

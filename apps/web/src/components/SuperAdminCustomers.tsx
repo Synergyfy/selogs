@@ -7,17 +7,17 @@ import {
 } from 'lucide-react';
 import './Dashboard.css';
 
+import { useOrganizations } from '../hooks/super-admin/useOrganizations';
+
 const SuperAdminCustomers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { data: organizations, isLoading } = useOrganizations();
 
-  const customers = [
-    { id: 1, name: "Sheraton Lagos", code: "SHER-LOS", plan: "Enterprise", status: "Active", joined: "2024-03-12", entries: "125,482", revenue: "₦450,000" },
-    { id: 2, name: "Ocean View Estate", code: "OV-EST", plan: "Business", status: "Active", joined: "2024-04-01", entries: "42,102", revenue: "₦180,000" },
-    { id: 3, name: "Eko Hotels", code: "EKO-HOT", plan: "Enterprise", status: "Active", joined: "2024-02-15", entries: "210,554", revenue: "₦550,000" },
-    { id: 4, name: "Victoria Court", code: "VIC-CRT", plan: "Starter", status: "Expired", joined: "2024-01-20", entries: "1,240", revenue: "₦0" },
-    { id: 5, name: "Unity Security", code: "UNITY-SEC", plan: "Business", status: "Active", joined: "2024-04-10", entries: "15,480", revenue: "₦15,000" },
-    { id: 6, name: "Grand Cinemas", code: "G-CIN", plan: "Trial", status: "Active", joined: "2024-04-28", entries: "450", revenue: "₦0" },
-  ];
+  const filteredCustomers = organizations?.filter(org => 
+    org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    org.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    org.industry.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   return (
     <div className="dashboard-overview sa-theme">
@@ -61,7 +61,9 @@ const SuperAdminCustomers: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {customers.map((customer) => (
+              {isLoading ? (
+                <tr><td colSpan={8} className="text-center p-24">Loading organizations...</td></tr>
+              ) : filteredCustomers.map((customer) => (
                 <tr key={customer.id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -72,13 +74,13 @@ const SuperAdminCustomers: React.FC = () => {
                     </div>
                   </td>
                   <td><code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{customer.code}</code></td>
-                  <td>{customer.plan}</td>
-                  <td className="text-muted">{customer.joined}</td>
-                  <td>{customer.entries}</td>
-                  <td className="sa-revenue-text">{customer.revenue}</td>
+                  <td>{customer.planName || 'N/A'}</td>
+                  <td className="text-muted">{new Date(customer.createdAt).toLocaleDateString()}</td>
+                  <td>{customer.deviceCount} Devices / {customer.branchCount} Branches</td>
+                  <td className="sa-revenue-text">N/A</td>
                   <td>
-                    <span className={`status-badge ${customer.status.toLowerCase()}`}>
-                      {customer.status}
+                    <span className={`status-badge active`}>
+                      Active
                     </span>
                   </td>
                   <td>

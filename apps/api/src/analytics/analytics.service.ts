@@ -129,4 +129,55 @@ export class AnalyticsService {
       activeCount: activeMap.get(b.id) || 0,
     }));
   }
+
+  /**
+   * Get global dashboard overview statistics for Super Admin.
+   */
+  async getGlobalOverview(): Promise<any> {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const [totalOrgs, activeSubscriptions, totalDevices, totalEntries, totalRevenue] = await Promise.all([
+      this.prisma.organization.count(),
+      this.prisma.subscription.count({
+        where: { status: 'active' },
+      }),
+      this.prisma.device.count(),
+      this.prisma.vehicleEntry.count(),
+      this.prisma.invoice.aggregate({
+        where: { status: 'paid' },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    return {
+      totalOrganizations: totalOrgs,
+      activeSubscriptions,
+      totalDevices,
+      totalEntriesCaptured: totalEntries,
+      platformRevenue: totalRevenue._sum.amount || 0,
+    };
+  }
+
+  /**
+   * Get global entry trends for Super Admin.
+   */
+  async getGlobalTrends(days = 30): Promise<AnalyticsTrendDto[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const trends = await this.prisma.$queryRaw<any[]>`
+      SELECT DATE(check_in_time) as date, COUNT(*) as count
+      FROM vehicle_entries
+      WHERE check_in_time >= ${startDate}
+      GROUP BY date
+      ORDER BY date ASC
+    `;
+
+    return trends.map((t) => ({
+      date: t.date.toISOString().split('T')[0],
+      count: Number(t.count),
+    }));
+  }
 }

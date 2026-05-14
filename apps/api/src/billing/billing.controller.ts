@@ -19,4 +19,16 @@ export class BillingController {
   ) {
     return this.billingService.getInvoices(organizationId, Number(page) || 1, Number(limit) || 20);
   }
+
+  @Get('global/revenue')
+  @Roles(Role.super_admin)
+  async getGlobalRevenue() {
+    return this.billingService.getGlobalRevenue();
+  }
+
+  @Get('global/invoices')
+  @Roles(Role.super_admin)
+  async getGlobalInvoices(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.billingService.getGlobalInvoices(Number(page) || 1, Number(limit) || 20);
+  }
 }

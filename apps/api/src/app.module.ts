@@ -18,6 +18,8 @@ import { BillingModule } from './billing/billing.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { SettingsModule } from './settings/settings.module';
 import { GatesModule } from './gates/gates.module';
+import { OrganizationsModule } from './organizations/organizations.module';
+import { AddonsModule } from './addons/addons.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { GatesModule } from './gates/gates.module';
     AnalyticsModule,
     SettingsModule,
     GatesModule,
+    OrganizationsModule,
+    AddonsModule,
   ],
   controllers: [AppController],
   providers: [

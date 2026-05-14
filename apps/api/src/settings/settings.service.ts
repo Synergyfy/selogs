@@ -124,4 +124,31 @@ export class SettingsService {
       },
     });
   }
+
+  /**
+   * Get global platform settings.
+   */
+  async getGlobalSettings() {
+    let settings = await this.prisma.globalSettings.findUnique({
+      where: { id: 'global' },
+    });
+
+    if (!settings) {
+      settings = await this.prisma.globalSettings.create({
+        data: { id: 'global' },
+      });
+    }
+
+    return settings;
+  }
+
+  /**
+   * Update global platform settings.
+   */
+  async updateGlobalSettings(dto: any) {
+    return this.prisma.globalSettings.update({
+      where: { id: 'global' },
+      data: dto,
+    });
+  }
 }

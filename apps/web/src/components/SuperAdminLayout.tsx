@@ -198,7 +198,7 @@ const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({ children, themeMode
               <button className="user-profile" onClick={() => setIsProfileOpen(!isProfileOpen)}>
                 <div className="user-avatar sa-avatar">SA</div>
                 <div className="user-info hide-mobile">
-                  <span className="user-name">{user?.name || 'Super Admin'}</span>
+                  <span className="user-name">{user?.fullName || 'Super Admin'}</span>
                   <span className="user-role">Platform Owner</span>
                 </div>
                 <ChevronDown size={16} className={`dropdown-arrow ${isProfileOpen ? 'open' : ''}`} />

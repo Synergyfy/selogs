@@ -30,4 +30,43 @@ export class BillingService {
       limit,
     };
   }
+
+  /**
+   * Get all invoices across the platform for Super Admin
+   */
+  async getGlobalInvoices(page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.invoice.findMany({
+        include: { organization: { select: { name: true } } },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.invoice.count(),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+    };
+  }
+
+  /**
+   * Get total platform revenue
+   */
+  async getGlobalRevenue() {
+    const aggregate = await this.prisma.invoice.aggregate({
+      where: { status: 'paid' },
+      _sum: { amount: true },
+    });
+
+    return {
+      totalRevenue: aggregate._sum.amount || 0,
+      currency: 'NGN',
+    };
+  }
 }

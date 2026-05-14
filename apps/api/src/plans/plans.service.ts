@@ -31,6 +31,7 @@ export class PlansService {
       data: {
         ...createPlanDto,
         ...pricing,
+        customFeatures: createPlanDto.customFeatures?.filter(f => f.trim() !== '') || [],
       },
     });
   }
@@ -78,6 +79,7 @@ export class PlansService {
       data: {
         ...updatePlanDto,
         ...pricing,
+        customFeatures: updatePlanDto.customFeatures?.filter(f => f.trim() !== '') || plan.customFeatures,
       },
     });
   }

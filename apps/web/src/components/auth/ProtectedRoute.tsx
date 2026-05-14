@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Role } from '../../services/auth.service';
+import type { Role } from '../../services/auth.service';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, isLoading, isAuthenticated, role } = useAuth();
+  const { isLoading, isAuthenticated, role } = useAuth();
   const location = useLocation();
 
   if (isLoading) {

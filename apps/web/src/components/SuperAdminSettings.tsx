@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Shield, 
@@ -13,19 +13,34 @@ import {
 } from 'lucide-react';
 import './Dashboard.css';
 
+import { useGlobalSettings } from '../hooks/super-admin/useGlobalSettings';
+import { useUpdateGlobalSettings } from '../hooks/super-admin/useUpdateGlobalSettings';
+import type { UpdateGlobalSettingsDto } from '../types/super-admin';
+
 const SuperAdminSettings: React.FC = () => {
-  const [maintMode, setMaintMode] = useState(false);
-  const [regEnabled, setRegEnabled] = useState(true);
+  const { data: settings, isLoading } = useGlobalSettings();
+  const updateSettings = useUpdateGlobalSettings();
+
+  const handleToggle = (key: keyof UpdateGlobalSettingsDto) => {
+    if (!settings) return;
+    updateSettings.mutate({ [key]: !settings[key as keyof typeof settings] });
+  };
 
   return (
     <div className="dashboard-overview sa-theme">
       <div className="section-header">
         <div>
-          <h1 className="hero-title" style={{ fontSize: '28px', marginBottom: '8px' }}>Platform Settings</h1>
+          <h1 className="hero-title" style={{ fontSize: '28px', marginBottom: '8px' }}>{settings?.platformName || 'Platform'} Settings</h1>
           <p className="text-muted">Configure global system behavior and security policies.</p>
         </div>
         <div className="flex-center gap-12">
-          <button className="btn-premium-sm" style={{ background: 'var(--sa-primary)' }}><Save size={16} /> Save Changes</button>
+          <button 
+            className="btn-premium-sm" 
+            style={{ background: 'var(--sa-primary)' }}
+            disabled={isLoading || updateSettings.isPending}
+          >
+            <Save size={16} /> Save Changes
+          </button>
         </div>
       </div>
 
@@ -49,11 +64,12 @@ const SuperAdminSettings: React.FC = () => {
                 <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Restrict platform access during updates.</p>
               </div>
               <button 
-                className={`theme-btn ${maintMode ? 'active' : ''}`}
-                onClick={() => setMaintMode(!maintMode)}
+                className={`theme-btn ${settings?.maintenanceMode ? 'active' : ''}`}
+                onClick={() => handleToggle('maintenanceMode')}
                 style={{ width: '60px', padding: '4px' }}
+                disabled={updateSettings.isPending}
               >
-                {maintMode ? 'ON' : 'OFF'}
+                {settings?.maintenanceMode ? 'ON' : 'OFF'}
               </button>
             </div>
             <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -62,11 +78,12 @@ const SuperAdminSettings: React.FC = () => {
                 <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Allow new organizations to sign up.</p>
               </div>
               <button 
-                className={`theme-btn ${regEnabled ? 'active' : ''}`}
-                onClick={() => setRegEnabled(!regEnabled)}
+                className={`theme-btn ${settings?.allowNewSignups ? 'active' : ''}`}
+                onClick={() => handleToggle('allowNewSignups')}
                 style={{ width: '60px', padding: '4px' }}
+                disabled={updateSettings.isPending}
               >
-                {regEnabled ? 'ON' : 'OFF'}
+                {settings?.allowNewSignups ? 'ON' : 'OFF'}
               </button>
             </div>
             <div className="setting-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

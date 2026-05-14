@@ -12,21 +12,47 @@ import {
 } from 'lucide-react';
 import './Dashboard.css'; // Reusing base grid styles
 
+import { useGlobalStats } from '../hooks/super-admin/useGlobalStats';
+import { useGlobalTrends } from '../hooks/super-admin/useGlobalTrends';
+import { useOrganizations } from '../hooks/super-admin/useOrganizations';
+
 const SuperAdminDashboard: React.FC = () => {
+  const { data: stats, isLoading: statsLoading } = useGlobalStats();
+  const { data: trends, isLoading: trendsLoading } = useGlobalTrends(7);
+  const { data: organizations } = useOrganizations();
+
   const globalStats = [
-    { title: "Total Organizations", value: "142", change: "+12 this month", icon: <Building2 size={24} />, color: "indigo" },
-    { title: "Platform Revenue", value: "₦4.2M", change: "+18%", icon: <DollarSign size={24} />, color: "emerald" },
-    { title: "Active Subscriptions", value: "98", change: "69% rate", icon: <ShieldCheck size={24} />, color: "blue" },
-    { title: "Total Logs Captured", value: "852k", change: "+42k today", icon: <Activity size={24} />, color: "amber" },
+    { 
+      title: "Total Organizations", 
+      value: statsLoading ? "..." : stats?.totalOrganizations.toString() || "0", 
+      change: "+12 this month", 
+      icon: <Building2 size={24} />, 
+      color: "indigo" 
+    },
+    { 
+      title: "Platform Revenue", 
+      value: statsLoading ? "..." : `₦${(stats?.platformRevenue || 0).toLocaleString()}`, 
+      change: "+18%", 
+      icon: <DollarSign size={24} />, 
+      color: "emerald" 
+    },
+    { 
+      title: "Active Subscriptions", 
+      value: statsLoading ? "..." : stats?.activeSubscriptions.toString() || "0", 
+      change: "69% rate", 
+      icon: <ShieldCheck size={24} />, 
+      color: "blue" 
+    },
+    { 
+      title: "Total Logs Captured", 
+      value: statsLoading ? "..." : `${((stats?.totalEntriesCaptured || 0) / 1000).toFixed(1)}k`, 
+      change: "+42k today", 
+      icon: <Activity size={24} />, 
+      color: "amber" 
+    },
   ];
 
-  const recentSignups = [
-    { id: 1, org: "Sheraton Lagos", plan: "Enterprise", time: "10 mins ago", status: "Active" },
-    { id: 2, org: "Ocean View Estate", plan: "Business", time: "2 hours ago", status: "Trial" },
-    { id: 3, org: "Eko Hotels & Suites", plan: "Enterprise", time: "5 hours ago", status: "Active" },
-    { id: 4, org: "Victoria Court", plan: "Starter", time: "1 day ago", status: "Expired" },
-    { id: 5, org: "Unity Security Ltd", plan: "Business", time: "2 days ago", status: "Active" },
-  ];
+  const recentSignups = organizations?.slice(0, 5) || [];
 
   return (
     <div className="dashboard-overview sa-theme">
@@ -90,14 +116,14 @@ const SuperAdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {recentSignups.map((signup) => (
-                  <tr key={signup.id}>
-                    <td className="font-bold">{signup.org}</td>
-                    <td>{signup.plan}</td>
-                    <td className="text-muted">{signup.time}</td>
+                {recentSignups.map((org) => (
+                  <tr key={org.id}>
+                    <td className="font-bold">{org.name}</td>
+                    <td>{org.planName || 'N/A'}</td>
+                    <td className="text-muted">{new Date(org.createdAt).toLocaleDateString()}</td>
                     <td>
-                      <span className={`status-badge ${signup.status.toLowerCase()}`}>
-                        {signup.status}
+                      <span className={`status-badge active`}>
+                        Active
                       </span>
                     </td>
                   </tr>
@@ -122,16 +148,25 @@ const SuperAdminDashboard: React.FC = () => {
           </div>
           <div className="chart-placeholder">
             <div className="chart-bars sa-bars">
-              {[30, 50, 70, 60, 90, 85, 100].map((height, i) => (
-                <div 
-                  key={i} 
-                  className="chart-bar" 
-                  style={{ height: `${height}%`, background: 'var(--sa-primary)' }}
-                />
-              ))}
+              {trendsLoading ? (
+                <div className="flex-center w-full h-full text-muted">Loading trends...</div>
+              ) : (
+                trends?.map((t, i) => (
+                  <div 
+                    key={i} 
+                    className="chart-bar" 
+                    style={{ 
+                      height: `${Math.min(100, (t.count / (Math.max(...trends.map(x => x.count)) || 1)) * 100)}%`, 
+                      background: 'var(--sa-primary)' 
+                    }}
+                  />
+                ))
+              )}
             </div>
             <div className="chart-labels">
-              <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
+              {trends?.map((t, i) => (
+                <span key={i}>{new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+              ))}
             </div>
           </div>
           

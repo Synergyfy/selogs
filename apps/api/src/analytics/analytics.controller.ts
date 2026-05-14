@@ -56,4 +56,21 @@ export class AnalyticsController {
   async getBranches(@GetCurrentUser('organizationId') organizationId: string) {
     return this.analyticsService.getBranchBreakdown(organizationId);
   }
+
+  @ApiOperation({ summary: 'Get global dashboard overview stats (Super Admin)' })
+  @Roles(Role.super_admin)
+  @ApiResponse({ status: 200 })
+  @Get('global/overview')
+  async getGlobalOverview() {
+    return this.analyticsService.getGlobalOverview();
+  }
+
+  @ApiOperation({ summary: 'Get global entry trends (Super Admin)' })
+  @Roles(Role.super_admin)
+  @ApiQuery({ name: 'days', required: false, type: Number })
+  @ApiResponse({ status: 200, type: [AnalyticsTrendDto] })
+  @Get('global/trends')
+  async getGlobalTrends(@Query('days', new ParseIntPipe({ optional: true })) days?: number) {
+    return this.analyticsService.getGlobalTrends(days || 30);
+  }
 }

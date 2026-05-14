@@ -52,9 +52,9 @@ export class AuthController {
     @Body() dto: SignupDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
-    const tokens = await this.authService.signup(dto);
-    this.setRefreshTokenCookie(res, tokens.refresh_token);
-    return { access_token: tokens.access_token };
+    const { tokens, user } = await this.authService.signup(dto);
+    this.setAuthCookies(res, tokens.access_token, tokens.refresh_token);
+    return { access_token: tokens.access_token, user };
   }
 
   /**
@@ -79,9 +79,9 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
-    const tokens = await this.authService.login(dto);
-    this.setRefreshTokenCookie(res, tokens.refresh_token);
-    return { access_token: tokens.access_token };
+    const { tokens, user } = await this.authService.login(dto);
+    this.setAuthCookies(res, tokens.access_token, tokens.refresh_token);
+    return { access_token: tokens.access_token, user };
   }
 
   /**
@@ -102,6 +102,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logout(userId);
+    res.clearCookie('access_token');
     res.clearCookie('refresh_token');
     return { message: 'Logged out successfully' };
   }
@@ -133,9 +134,9 @@ export class AuthController {
     @GetCurrentUser('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDto> {
-    const tokens = await this.authService.refreshTokens(userId, refreshToken);
-    this.setRefreshTokenCookie(res, tokens.refresh_token);
-    return { access_token: tokens.access_token };
+    const { tokens, user } = await this.authService.refreshTokens(userId, refreshToken);
+    this.setAuthCookies(res, tokens.access_token, tokens.refresh_token);
+    return { access_token: tokens.access_token, user };
   }
 
   /**
@@ -191,13 +192,20 @@ export class AuthController {
   }
 
   /**
-   * Helper to set the refresh token in an HTTP-only cookie.
+   * Helper to set auth tokens in HTTP-only cookies.
    */
-  private setRefreshTokenCookie(res: Response, token: string) {
-    res.cookie('refresh_token', token, {
+  private setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+    res.cookie('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax', // Use 'lax' for better compatibility with cross-site requests if needed, or 'strict'
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }
