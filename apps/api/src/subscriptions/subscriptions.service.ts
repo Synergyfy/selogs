@@ -70,85 +70,127 @@ export class SubscriptionsService {
   }
 
   /**
-   * Initialize a new subscription or upgrade
+   * Initialize a new subscription checkout
    */
-  async initializeSubscription(organizationId: string, email: string, dto: InitializeSubscriptionDto) {
+  async initializeCheckout(organizationId: string, email: string, dto: CheckoutDto) {
     const plan = await this.plansService.findOne(dto.planId);
     
-    let amount = plan.monthlyPrice;
-    if (dto.billingCycle === BillingCycle.QUARTERLY) amount = plan.quarterlyPrice || plan.monthlyPrice * 3;
-    if (dto.billingCycle === BillingCycle.YEARLY) amount = plan.yearlyPrice || plan.monthlyPrice * 12;
+    if (plan.isFree) {
+      throw new BadRequestException('Cannot purchase a free plan');
+    }
+
+    let planAmount = plan.monthlyPrice;
+    let months = 1;
+
+    if (dto.billingCycle === BillingCycle.QUARTERLY) {
+      planAmount = plan.quarterlyPrice || plan.monthlyPrice * 3;
+      months = 3;
+    } else if (dto.billingCycle === BillingCycle.YEARLY) {
+      planAmount = plan.yearlyPrice || plan.monthlyPrice * 12;
+      months = 12;
+    }
+
+    let addonsAmount = 0;
+    if (dto.addonIds && dto.addonIds.length > 0) {
+      const addons = await this.prisma.addon.findMany({
+        where: { id: { in: dto.addonIds }, isActive: true },
+      });
+      if (addons.length !== dto.addonIds.length) {
+        throw new BadRequestException('One or more invalid add-ons provided');
+      }
+      addonsAmount = addons.reduce((sum, addon) => sum + (addon.monthlyPrice * months), 0);
+    }
+
+    const totalAmount = planAmount + addonsAmount;
 
     const metadata = {
       organizationId,
       planId: plan.id,
       billingCycle: dto.billingCycle,
+      addonIds: dto.addonIds || [],
+      type: 'checkout',
     };
 
-    const result = await this.paystack.initializeTransaction(email, amount, metadata);
-    return result;
+    const result = await this.paystack.initializeTransaction(email, totalAmount, metadata);
+    return {
+      access_code: result.data.access_code,
+      authorization_url: result.data.authorization_url,
+      reference: result.data.reference,
+    };
   }
 
   /**
-   * Verify subscription payment and update organization status
+   * Start a trial for a plan
    */
-  async verifySubscription(organizationId: string, reference: string) {
-    const verification = await this.paystack.verifyTransaction(reference) as any;
-    
-    if (verification.data.status !== 'success') {
-      throw new BadRequestException('Payment verification failed');
+  async startTrial(organizationId: string, planId: string) {
+    const plan = await this.plansService.findOne(planId);
+    if (!plan.trialEnabled) {
+      throw new BadRequestException('Trial is not enabled for this plan');
     }
 
-    const { planId, billingCycle } = verification.data.metadata;
-    const amount = verification.data.amount / 100; // back to NGN
+    const existingSub = await this.prisma.subscription.findUnique({
+      where: { organizationId },
+    });
 
-    return await this.prisma.$transaction(async (tx) => {
-      // 1. Create Invoice record
-      await tx.invoice.create({
-        data: {
-          organizationId,
-          amount,
-          status: 'paid',
-          paystackReference: reference,
-          paidAt: new Date(verification.data.paid_at),
-          paymentMethod: `${verification.data.authorization.brand} **** ${verification.data.authorization.last4}`,
-        },
-      });
+    if (existingSub && existingSub.status !== SubscriptionStatus.trialing && existingSub.status !== SubscriptionStatus.canceled) {
+      throw new BadRequestException('Organization already has an active subscription');
+    }
 
-      // 2. Update or Create Subscription
-      const nextBillingDate = this.calculateNextBillingDate(new Date(), billingCycle);
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + plan.trialDays);
 
-      const subscription = await tx.subscription.upsert({
+    return this.prisma.$transaction(async (tx) => {
+      const sub = await tx.subscription.upsert({
         where: { organizationId },
         update: {
           planId,
-          status: SubscriptionStatus.active,
-          nextBillingDate,
-          updatedAt: new Date(),
+          status: SubscriptionStatus.trialing,
+          trialEndsAt,
+          nextBillingDate: trialEndsAt,
         },
         create: {
           organizationId,
           planId,
-          status: SubscriptionStatus.active,
-          nextBillingDate,
+          status: SubscriptionStatus.trialing,
+          trialEndsAt,
+          nextBillingDate: trialEndsAt,
         },
       });
 
-      // 3. Sync planId on Organization model for quick access
       await tx.organization.update({
         where: { id: organizationId },
         data: { planId },
       });
 
-      return subscription;
+      return sub;
     });
   }
 
-  private calculateNextBillingDate(startDate: Date, cycle: BillingCycle): Date {
-    const date = new Date(startDate);
-    if (cycle === BillingCycle.MONTHLY) date.setMonth(date.getMonth() + 1);
-    else if (cycle === BillingCycle.QUARTERLY) date.setMonth(date.getMonth() + 3);
-    else if (cycle === BillingCycle.YEARLY) date.setFullYear(date.getFullYear() + 1);
-    return date;
+  /**
+   * Cancel subscription
+   */
+  async cancelSubscription(organizationId: string) {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { organizationId },
+    });
+
+    if (!sub || sub.status === SubscriptionStatus.canceled) {
+      throw new BadRequestException('No active subscription to cancel');
+    }
+
+    if (sub.paystackSubscriptionCode && sub.paystackEmailToken) {
+      // attempt to disable on paystack
+      await this.paystack.disableSubscription(sub.paystackSubscriptionCode, sub.paystackEmailToken).catch((err) => {
+        this.logger.error(`Failed to disable on Paystack: ${err.message}`);
+      });
+    }
+
+    return this.prisma.subscription.update({
+      where: { organizationId },
+      data: {
+        status: SubscriptionStatus.canceled,
+        nextBillingDate: null,
+      },
+    });
   }
 }

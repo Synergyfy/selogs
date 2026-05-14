@@ -26,37 +26,21 @@ export class CreatePlanDto {
   @Min(0)
   monthlyPrice!: number;
 
-  @ApiPropertyOptional({
-    example: 10,
-    description: 'Percentage discount for quarterly payment',
-  })
-  @IsNumber()
-  @Min(0)
-  @Max(100)
+  @ApiPropertyOptional({ default: false, description: 'If true, plan is free and cannot be paid for' })
+  @IsBoolean()
   @IsOptional()
-  quarterlyDiscount?: number;
+  isFree?: boolean;
 
-  @ApiPropertyOptional({
-    example: 20,
-    description: 'Percentage discount for yearly payment',
-  })
-  @IsNumber()
-  @Min(0)
-  @Max(100)
+  @ApiPropertyOptional({ default: true, description: 'If true, users can start a trial on this plan' })
+  @IsBoolean()
   @IsOptional()
-  yearlyDiscount?: number;
+  trialEnabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Manual override for quarterly price' })
+  @ApiPropertyOptional({ default: 30, description: 'Number of days the trial lasts' })
   @IsNumber()
   @Min(0)
   @IsOptional()
-  quarterlyPrice?: number;
-
-  @ApiPropertyOptional({ description: 'Manual override for yearly price' })
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  yearlyPrice?: number;
+  trialDays?: number;
 
   @ApiPropertyOptional({ default: 1 })
   @IsNumber()

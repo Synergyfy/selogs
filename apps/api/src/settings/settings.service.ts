@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateBrandingDto } from './dto/branding.dto';
 import { UpdateProfileDto } from './dto/profile.dto';
 import { UpdateSystemSettingsDto } from './dto/system.dto';
+import { UpdateGlobalSettingsDto } from './dto/global-settings.dto';
+import { PlansService } from '../plans/plans.service';
 
 @Injectable()
 export class SettingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => PlansService))
+    private plansService: PlansService,
+  ) {}
 
   /**
    * Get organization branding settings.
@@ -145,10 +151,16 @@ export class SettingsService {
   /**
    * Update global platform settings.
    */
-  async updateGlobalSettings(dto: any) {
-    return this.prisma.globalSettings.update({
+  async updateGlobalSettings(dto: UpdateGlobalSettingsDto) {
+    const settings = await this.prisma.globalSettings.update({
       where: { id: 'global' },
       data: dto,
     });
+
+    if (dto.quarterlyDiscount !== undefined || dto.yearlyDiscount !== undefined) {
+      await this.plansService.recomputeAllPlanPrices();
+    }
+
+    return settings;
   }
 }

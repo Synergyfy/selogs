@@ -19,7 +19,8 @@ import {
 import { Role } from '@prisma/client';
 import { AddonsService } from './addons.service';
 import { CreateAddonDto, UpdateAddonDto } from './dto';
-import { Roles } from '../auth/decorators';
+import { PurchaseAddonDto } from './dto/purchase-addon.dto';
+import { Roles, GetCurrentUser } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 import { Public } from '../auth/decorators/public.decorator';
 
@@ -80,5 +81,19 @@ export class AddonsController {
   @ApiOperation({ summary: 'Delete an addon (Super Admin only)' })
   remove(@Param('id') id: string) {
     return this.addonsService.remove(id);
+  }
+
+  @Post('purchase')
+  @Roles(Role.admin)
+  @UseGuards(RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Purchase a standalone add-on using saved payment method' })
+  @ApiResponse({ status: 201, description: 'Add-on purchased successfully.' })
+  purchaseAddon(
+    @GetCurrentUser('organizationId') organizationId: string,
+    @GetCurrentUser('email') email: string,
+    @Body() dto: PurchaseAddonDto,
+  ) {
+    return this.addonsService.purchaseAddonStandalone(organizationId, email, dto.addonId);
   }
 }

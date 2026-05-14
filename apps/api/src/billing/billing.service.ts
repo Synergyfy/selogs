@@ -74,40 +74,42 @@ export class BillingService {
    * Get saved payment methods for an organization
    */
   async getPaymentMethods(organizationId: string) {
-    // In a real app, this would query a PaymentMethods table.
-    // Here we extract unique payment method masks from invoice history.
-    const invoices = await this.prisma.invoice.findMany({
-      where: {
-        organizationId,
-        paymentMethod: { not: null },
-      },
-      select: { paymentMethod: true },
-      distinct: ['paymentMethod'],
+    return this.prisma.paymentMethod.findMany({
+      where: { organizationId },
       orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
-
-    return invoices.map((inv) => {
-      const parts = inv.paymentMethod!.split(' '); // e.g. "Visa **** 4242"
-      return {
-        brand: parts[0] || 'Card',
-        last4: parts[parts.length - 1] || '****',
-        expMonth: 12, // Mocked
-        expYear: 2025, // Mocked
-        isDefault: true,
-      };
     });
   }
 
   /**
-   * Add a new payment method
+   * Set default payment method
    */
-  async addPaymentMethod(organizationId: string, reference: string) {
-    // Mocking the verification and saving of a payment method token
-    // In production, you'd call Paystack to verify and then save the authorization token
-    return {
-      message: 'Payment method added successfully',
-      status: 'success',
-    };
+  async setDefaultPaymentMethod(organizationId: string, paymentMethodId: string) {
+    await this.prisma.$transaction(async (tx) => {
+      // Unset existing defaults
+      await tx.paymentMethod.updateMany({
+        where: { organizationId },
+        data: { isDefault: false },
+      });
+
+      // Set new default
+      await tx.paymentMethod.update({
+        where: { id: paymentMethodId, organizationId },
+        data: { isDefault: true },
+      });
+    });
+
+    return { success: true };
+  }
+
+  /**
+   * Get add-ons purchased by the organization
+   */
+  async getOrgAddons(organizationId: string) {
+    const orgAddons = await this.prisma.organizationAddon.findMany({
+      where: { organizationId },
+      include: { addon: true },
+    });
+    
+    return orgAddons.map(oa => oa.addon);
   }
 }

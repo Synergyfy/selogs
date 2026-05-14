@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
-import { InitializeSubscriptionDto } from './dto/initialize-subscription.dto';
+import { CheckoutDto } from './dto/checkout.dto';
 import { GetCurrentUser } from '../auth/decorators';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
@@ -17,22 +17,30 @@ export class SubscriptionsController {
     return this.subscriptionsService.getOrgSubscription(organizationId);
   }
 
-  @Post('initialize')
+  @Post('checkout')
   @Roles(Role.admin)
-  async initialize(
+  async checkout(
     @GetCurrentUser('organizationId') organizationId: string,
     @GetCurrentUser('email') email: string,
-    @Body() dto: InitializeSubscriptionDto,
+    @Body() dto: CheckoutDto,
   ) {
-    return this.subscriptionsService.initializeSubscription(organizationId, email, dto);
+    return this.subscriptionsService.initializeCheckout(organizationId, email, dto);
   }
 
-  @Post('verify')
+  @Post('start-trial/:planId')
   @Roles(Role.admin)
-  async verify(
+  async startTrial(
     @GetCurrentUser('organizationId') organizationId: string,
-    @Query('reference') reference: string,
+    @Param('planId') planId: string,
   ) {
-    return this.subscriptionsService.verifySubscription(organizationId, reference);
+    return this.subscriptionsService.startTrial(organizationId, planId);
+  }
+
+  @Post('cancel')
+  @Roles(Role.admin)
+  async cancelSubscription(
+    @GetCurrentUser('organizationId') organizationId: string,
+  ) {
+    return this.subscriptionsService.cancelSubscription(organizationId);
   }
 }

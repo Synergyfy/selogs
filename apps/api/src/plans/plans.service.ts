@@ -2,10 +2,13 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
+import { BillingCycle } from '@prisma/client';
 
 @Injectable()
 export class PlansService {
@@ -25,11 +28,25 @@ export class PlansService {
       );
     }
 
-    const pricing = this.calculatePricing(createPlanDto);
+    let { monthlyPrice, isFree, trialEnabled } = createPlanDto;
+    
+    if (isFree) {
+      monthlyPrice = 0;
+      trialEnabled = false;
+    }
+
+    const settings = await this.prisma.globalSettings.findUnique({ where: { id: 'global' } });
+    const qDiscount = settings?.quarterlyDiscount || 0;
+    const yDiscount = settings?.yearlyDiscount || 0;
+
+    const pricing = this.calculatePricing(monthlyPrice, qDiscount, yDiscount);
 
     return this.prisma.plan.create({
       data: {
         ...createPlanDto,
+        monthlyPrice,
+        isFree: isFree ?? false,
+        trialEnabled: trialEnabled ?? true,
         ...pricing,
         customFeatures: createPlanDto.customFeatures?.filter(f => f.trim() !== '') || [],
       },
@@ -67,17 +84,28 @@ export class PlansService {
   async update(id: string, updatePlanDto: UpdatePlanDto) {
     const plan = await this.findOne(id);
 
-    // Re-calculate pricing if monthly price or discounts change
-    const pricing = this.calculatePricing({
-      ...plan,
-      ...updatePlanDto,
-      description: updatePlanDto.description ?? (plan.description || undefined),
-    } as CreatePlanDto);
+    let monthlyPrice = updatePlanDto.monthlyPrice ?? plan.monthlyPrice;
+    let isFree = updatePlanDto.isFree ?? plan.isFree;
+    let trialEnabled = updatePlanDto.trialEnabled ?? plan.trialEnabled;
+
+    if (isFree) {
+      monthlyPrice = 0;
+      trialEnabled = false;
+    }
+
+    const settings = await this.prisma.globalSettings.findUnique({ where: { id: 'global' } });
+    const qDiscount = settings?.quarterlyDiscount || 0;
+    const yDiscount = settings?.yearlyDiscount || 0;
+
+    const pricing = this.calculatePricing(monthlyPrice, qDiscount, yDiscount);
 
     return this.prisma.plan.update({
       where: { id },
       data: {
         ...updatePlanDto,
+        monthlyPrice,
+        isFree,
+        trialEnabled,
         ...pricing,
         customFeatures: updatePlanDto.customFeatures?.filter(f => f.trim() !== '') || plan.customFeatures,
       },
@@ -99,20 +127,33 @@ export class PlansService {
   /**
    * Helper to calculate quarterly and yearly prices based on discounts
    */
-  private calculatePricing(dto: CreatePlanDto) {
-    const monthlyPrice = dto.monthlyPrice;
-    const qDiscount = dto.quarterlyDiscount || 0;
-    const yDiscount = dto.yearlyDiscount || 0;
-
-    const quarterlyPrice =
-      dto.quarterlyPrice ?? monthlyPrice * 3 * (1 - qDiscount / 100);
-
-    const yearlyPrice =
-      dto.yearlyPrice ?? monthlyPrice * 12 * (1 - yDiscount / 100);
-
+  private calculatePricing(monthlyPrice: number, qDiscount: number, yDiscount: number) {
     return {
-      quarterlyPrice,
-      yearlyPrice,
+      quarterlyPrice: +(monthlyPrice * 3 * (1 - qDiscount / 100)).toFixed(2),
+      yearlyPrice: +(monthlyPrice * 12 * (1 - yDiscount / 100)).toFixed(2),
     };
+  }
+
+  /**
+   * Recompute prices for all plans based on global discounts.
+   */
+  async recomputeAllPlanPrices() {
+    const settings = await this.prisma.globalSettings.findUnique({ where: { id: 'global' } });
+    const qDiscount = settings?.quarterlyDiscount || 0;
+    const yDiscount = settings?.yearlyDiscount || 0;
+
+    const plans = await this.prisma.plan.findMany({ where: { isFree: false } });
+
+    if (plans.length === 0) return;
+
+    await this.prisma.$transaction(
+      plans.map(plan => {
+        const pricing = this.calculatePricing(plan.monthlyPrice, qDiscount, yDiscount);
+        return this.prisma.plan.update({
+          where: { id: plan.id },
+          data: pricing,
+        });
+      })
+    );
   }
 }

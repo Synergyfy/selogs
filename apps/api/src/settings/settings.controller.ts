@@ -16,6 +16,7 @@ import { SettingsService } from './settings.service';
 import { UpdateBrandingDto } from './dto/branding.dto';
 import { UpdateProfileDto } from './dto/profile.dto';
 import { UpdateSystemSettingsDto } from './dto/system.dto';
+import { UpdateGlobalSettingsDto } from './dto/global-settings.dto';
 import { Roles, GetCurrentUser } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
 
@@ -89,8 +90,9 @@ export class SettingsController {
 
   @ApiOperation({ summary: 'Update global platform settings (Super Admin)' })
   @Roles(Role.super_admin)
+  @ApiResponse({ status: 200, description: 'Global settings updated successfully.' })
   @Patch('global')
-  async updateGlobalSettings(@Body() dto: any) {
+  async updateGlobalSettings(@Body() dto: UpdateGlobalSettingsDto) {
     return this.settingsService.updateGlobalSettings(dto);
   }
 }

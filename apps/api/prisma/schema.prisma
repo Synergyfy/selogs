@@ -40,6 +40,17 @@ enum SubscriptionStatus {
   unpaid
 }
 
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum InvoiceType {
+  PLAN
+  ADDON
+}
+
 model Organization {
   id        String   @id @default(uuid())
   name      String
@@ -67,6 +78,7 @@ model Organization {
   subscription   Subscription?
   invoices       Invoice[]
   addons         OrganizationAddon[]
+  paymentMethods PaymentMethod[]
 
   @@map("organizations")
 }
@@ -83,9 +95,13 @@ model Subscription {
   startDate         DateTime           @default(now()) @map("start_date")
   endDate           DateTime?          @map("end_date")
   nextBillingDate   DateTime?          @map("next_billing_date")
+  trialEndsAt       DateTime?          @map("trial_ends_at")
+  billingCycle      BillingCycle       @default(MONTHLY) @map("billing_cycle")
   
   paystackSubscriptionCode String?     @unique @map("paystack_subscription_code")
-  paystackEmailToken      String?     @map("paystack_email_token")
+  paystackEmailToken       String?     @map("paystack_email_token")
+  paystackCustomerCode     String?     @map("paystack_customer_code")
+  authorizationCode        String?     @map("authorization_code")
   
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
@@ -97,6 +113,11 @@ model Invoice {
   id                String    @id @default(uuid())
   organizationId    String    @map("organization_id")
   organization      Organization @relation(fields: [organizationId], references: [id])
+  
+  type              InvoiceType @default(PLAN)
+  addonId           String?   @map("addon_id")
+  description       String?
+  billingCycle      BillingCycle? @map("billing_cycle")
   
   amount            Float
   currency          String    @default("NGN")
@@ -122,8 +143,17 @@ model Plan {
   monthlyPrice      Float    @map("monthly_price")
   quarterlyPrice    Float?   @map("quarterly_price")
   yearlyPrice       Float?   @map("yearly_price")
-  quarterlyDiscount Float    @default(0) @map("quarterly_discount")
-  yearlyDiscount    Float    @default(0) @map("yearly_discount")
+  
+  isFree            Boolean  @default(false) @map("is_free")
+  trialEnabled      Boolean  @default(true)  @map("trial_enabled")
+  trialDays         Int      @default(30)    @map("trial_days")
+  
+  quarterlyDiscount Float?   @map("quarterly_discount")
+  yearlyDiscount    Float?   @map("yearly_discount")
+
+  paystackPlanCodeMonthly   String? @map("paystack_plan_code_monthly")
+  paystackPlanCodeQuarterly String? @map("paystack_plan_code_quarterly")
+  paystackPlanCodeYearly    String? @map("paystack_plan_code_yearly")
   
   branchLimit       Int      @default(1) @map("branch_limit")
   staffLimit        Int      @default(5) @map("staff_limit")
@@ -302,6 +332,9 @@ model GlobalSettings {
   supportPhone      String?  @map("support_phone")
   allowNewSignups   Boolean  @default(true) @map("allow_new_signups")
   
+  quarterlyDiscount Float    @default(0) @map("quarterly_discount")
+  yearlyDiscount    Float    @default(0) @map("yearly_discount")
+  
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@map("global_settings")
@@ -353,4 +386,23 @@ model OrganizationAddon {
   @@unique([organizationId, addonId])
   @@index([organizationId])
   @@map("organization_addons")
+}
+
+model PaymentMethod {
+  id                String   @id @default(uuid())
+  organizationId    String   @map("organization_id")
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  authorizationCode String   @unique @map("authorization_code")
+  cardType          String?  @map("card_type")
+  last4             String?
+  expMonth          String?  @map("exp_month")
+  expYear           String?  @map("exp_year")
+  bank              String?
+  countryCode       String?  @map("country_code")
+  isDefault         Boolean  @default(false) @map("is_default")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@map("payment_methods")
 }

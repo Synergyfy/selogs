@@ -1,10 +1,9 @@
-import { Controller, Get, Post, Body, Query, UseGuards, HttpCode, HttpStatus, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Param, HttpCode, HttpStatus, Delete } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { GetCurrentUser } from '../auth/decorators';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { AddPaymentMethodDto } from './dto/payment-method.dto';
 
 @Controller('billing')
 @UseGuards(RolesGuard)
@@ -39,12 +38,18 @@ export class BillingController {
     return this.billingService.getPaymentMethods(organizationId);
   }
 
-  @Post('payment-methods')
+  @Post('payment-methods/:id/default')
   @Roles(Role.admin)
-  async addPaymentMethod(
+  async setDefaultPaymentMethod(
     @GetCurrentUser('organizationId') organizationId: string,
-    @Body() dto: AddPaymentMethodDto,
+    @Param('id') paymentMethodId: string,
   ) {
-    return this.billingService.addPaymentMethod(organizationId, dto.reference);
+    return this.billingService.setDefaultPaymentMethod(organizationId, paymentMethodId);
+  }
+
+  @Get('addons')
+  @Roles(Role.admin)
+  async getOrgAddons(@GetCurrentUser('organizationId') organizationId: string) {
+    return this.billingService.getOrgAddons(organizationId);
   }
 }

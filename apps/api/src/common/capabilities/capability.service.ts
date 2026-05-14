@@ -31,7 +31,7 @@ export class CapabilityService {
         subscription: {
           select: {
             status: true,
-            endDate: true,
+            nextBillingDate: true,
             plan: {
               select: {
                 branchLimit: true,
@@ -40,6 +40,7 @@ export class CapabilityService {
                 hasOcr: true,
                 hasAnalytics: true,
                 hasExport: true,
+                isFree: true,
               },
             },
           },
@@ -53,6 +54,7 @@ export class CapabilityService {
             hasOcr: true,
             hasAnalytics: true,
             hasExport: true,
+            isFree: true,
           },
         },
         addons: {
@@ -94,7 +96,7 @@ export class CapabilityService {
     }
 
     // ── Subscription active check ──────────────────────────────────────────
-    const isSubscriptionActive = this.isActive(org.subscription ?? null);
+    const isSubscriptionActive = this.isActive(org.subscription as any, org.plan as any);
 
     // ── Numeric limit accumulation ─────────────────────────────────────────
     let branchLimit = plan.branchLimit;
@@ -149,21 +151,29 @@ export class CapabilityService {
 
 
   private isActive(
-    subscription: { status: SubscriptionStatus; endDate: Date | null } | null,
+    subscription: { status: SubscriptionStatus; nextBillingDate: Date | null; plan: { isFree: boolean } } | null,
+    planFallback: { isFree: boolean } | null,
   ): boolean {
+    const isFree = subscription?.plan?.isFree || planFallback?.isFree || false;
+    
+    // Free plans are always active
+    if (isFree) return true;
+
     if (!subscription) return false;
 
-    const { status, endDate } = subscription;
+    const { status, nextBillingDate } = subscription;
 
     const activeStatuses: SubscriptionStatus[] = [
       SubscriptionStatus.active,
       SubscriptionStatus.trialing,
+      SubscriptionStatus.past_due, // Allow usage during past_due period (handled by scheduler/expiry check)
     ];
 
     if (!activeStatuses.includes(status)) return false;
 
-    // If endDate is set it must be in the future.
-    if (endDate !== null && endDate <= new Date()) return false;
+    // If nextBillingDate is set and status is not trialing/past_due, check if it's in the future.
+    // For trial/past_due, we allow usage as long as the status is set (handled by expiry job).
+    if (status === SubscriptionStatus.active && nextBillingDate !== null && nextBillingDate <= new Date()) return false;
 
     return true;
   }
