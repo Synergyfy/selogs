@@ -44,6 +44,7 @@ export class AddonsController {
   @UseGuards(RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all addons (including inactive ones) (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'List of all addons.' })
   findAll() {
     return this.addonsService.findAll();
   }
@@ -51,6 +52,7 @@ export class AddonsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Get all active addons' })
+  @ApiResponse({ status: 200, description: 'List of active addons.' })
   findAllActive() {
     return this.addonsService.findAllActive();
   }
@@ -69,6 +71,8 @@ export class AddonsController {
   @UseGuards(RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an addon (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Addon updated successfully.' })
+  @ApiResponse({ status: 404, description: 'Addon not found.' })
   update(@Param('id') id: string, @Body() updateAddonDto: UpdateAddonDto) {
     return this.addonsService.update(id, updateAddonDto);
   }
@@ -79,6 +83,8 @@ export class AddonsController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an addon (Super Admin only)' })
+  @ApiResponse({ status: 204, description: 'Addon deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'Addon not found.' })
   remove(@Param('id') id: string) {
     return this.addonsService.remove(id);
   }

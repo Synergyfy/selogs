@@ -8,7 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { NotificationsService } from './notifications.service';
 import { NotificationResponseDto, BroadcastNotificationDto } from './dto/notification.dto';
@@ -26,6 +26,7 @@ export class NotificationsController {
   @Get()
   @Roles(Role.admin, Role.supervisor, Role.guard, Role.super_admin)
   @ApiOperation({ summary: 'List organization notifications' })
+  @ApiResponse({ status: 200, description: 'Paginated notifications list.' })
   async findAll(
     @GetCurrentUser('organizationId') organizationId: string,
     @Query('limit') limit?: string,
@@ -40,6 +41,7 @@ export class NotificationsController {
   @Get('unread-count')
   @Roles(Role.admin, Role.supervisor, Role.guard, Role.super_admin)
   @ApiOperation({ summary: 'Get unread notification count' })
+  @ApiResponse({ status: 200, description: 'Unread notification count.' })
   async getUnreadCount(
     @GetCurrentUser('organizationId') organizationId: string,
   ): Promise<{ count: number }> {
@@ -50,6 +52,8 @@ export class NotificationsController {
   @Patch(':id/read')
   @Roles(Role.admin, Role.supervisor, Role.guard, Role.super_admin)
   @ApiOperation({ summary: 'Mark notification as read' })
+  @ApiResponse({ status: 200, description: 'Notification marked as read.' })
+  @ApiResponse({ status: 404, description: 'Notification not found.' })
   async markAsRead(
     @Param('id') id: string,
     @GetCurrentUser('organizationId') organizationId: string,
@@ -60,6 +64,7 @@ export class NotificationsController {
   @Patch('read-all')
   @Roles(Role.admin, Role.supervisor, Role.guard, Role.super_admin)
   @ApiOperation({ summary: 'Mark all notifications as read' })
+  @ApiResponse({ status: 200, description: 'All notifications marked as read.' })
   async markAllAsRead(
     @GetCurrentUser('organizationId') organizationId: string,
   ): Promise<void> {
@@ -69,6 +74,7 @@ export class NotificationsController {
   @Post('broadcast')
   @Roles(Role.super_admin)
   @ApiOperation({ summary: 'Broadcast notification to organizations' })
+  @ApiResponse({ status: 201, description: 'Notification broadcasted.' })
   async broadcast(
     @Body() dto: BroadcastNotificationDto,
   ): Promise<{ count: number }> {
@@ -84,6 +90,7 @@ export class NotificationsController {
   @Get('all')
   @Roles(Role.super_admin)
   @ApiOperation({ summary: 'List all notifications across organizations (super admin)' })
+  @ApiResponse({ status: 200, description: 'List of all broadcast notifications.' })
   async findAllBroadcasts(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,

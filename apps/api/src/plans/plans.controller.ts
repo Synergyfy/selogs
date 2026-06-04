@@ -46,6 +46,7 @@ export class PlansController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Get all active plans' })
+  @ApiResponse({ status: 200, description: 'List of active plans.' })
   findAll() {
     return this.plansService.findAll();
   }
@@ -64,6 +65,8 @@ export class PlansController {
   @UseGuards(RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a plan (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Plan updated successfully.' })
+  @ApiResponse({ status: 404, description: 'Plan not found.' })
   update(@Param('id') id: string, @Body() updatePlanDto: UpdatePlanDto) {
     return this.plansService.update(id, updatePlanDto);
   }
@@ -74,6 +77,8 @@ export class PlansController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deactivate a plan (Super Admin only)' })
+  @ApiResponse({ status: 204, description: 'Plan deactivated successfully.' })
+  @ApiResponse({ status: 404, description: 'Plan not found.' })
   remove(@Param('id') id: string) {
     return this.plansService.remove(id);
   }

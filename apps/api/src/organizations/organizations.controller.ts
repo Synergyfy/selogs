@@ -39,6 +39,8 @@ export class OrganizationsController {
   }
 
   @ApiOperation({ summary: 'Update organization (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organization updated successfully.' })
+  @ApiResponse({ status: 404, description: 'Organization not found.' })
   @Roles(Role.super_admin)
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
@@ -46,6 +48,8 @@ export class OrganizationsController {
   }
 
   @ApiOperation({ summary: 'Delete organization (Super Admin only)' })
+  @ApiResponse({ status: 204, description: 'Organization deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'Organization not found.' })
   @Roles(Role.super_admin)
   @Delete(':id')
   remove(@Param('id') id: string) {
