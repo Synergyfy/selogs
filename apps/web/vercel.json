@@ -1,6 +1,6 @@
 {
-  "installCommand": "npm ci",
-  "buildCommand": "npm run build",
+  "installCommand": "pnpm i",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "rewrites": [
     {
