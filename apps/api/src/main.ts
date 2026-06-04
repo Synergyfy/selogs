@@ -10,7 +10,12 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'], // Added 5174 as well just in case
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://selogs.vercel.app',
+      /https:\/\/selogs-.*\.vercel\.app$/, // covers preview deployments
+    ],
     credentials: true,
   });
   app.use(cookieParser());
