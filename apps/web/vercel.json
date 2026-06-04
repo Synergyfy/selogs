@@ -1,6 +1,6 @@
 {
-  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@10.29.1 --activate && pnpm i --filter vehicle-capture-system...",
-  "buildCommand": "cd ../.. && pnpm --filter vehicle-capture-system build",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {
