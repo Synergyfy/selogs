@@ -154,7 +154,26 @@ export class AnalyticsService {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
-    const [totalOrgs, activeSubscriptions, totalDevices, totalEntries, totalRevenue] = await Promise.all([
+    const startOfThisMonth = new Date();
+    startOfThisMonth.setDate(1);
+    startOfThisMonth.setHours(0, 0, 0, 0);
+
+    const startOfLastMonth = new Date(startOfThisMonth);
+    startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
+
+    const [
+      totalOrgs,
+      activeSubscriptions,
+      totalDevices,
+      totalEntries,
+      totalRevenue,
+      orgsThisMonth,
+      entriesToday,
+      revenueThisMonth,
+      revenueLastMonth,
+      activeSubsThisMonth,
+      activeSubsLastMonth,
+    ] = await Promise.all([
       this.prisma.organization.count(),
       this.prisma.subscription.count({
         where: { status: 'active' },
@@ -165,7 +184,72 @@ export class AnalyticsService {
         where: { status: 'paid' },
         _sum: { amount: true },
       }),
+      this.prisma.organization.count({
+        where: { createdAt: { gte: startOfThisMonth } },
+      }),
+      this.prisma.vehicleEntry.count({
+        where: { checkInTime: { gte: startOfToday } },
+      }),
+      this.prisma.invoice.aggregate({
+        where: {
+          status: 'paid',
+          paidAt: { gte: startOfThisMonth },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.invoice.aggregate({
+        where: {
+          status: 'paid',
+          paidAt: {
+            gte: startOfLastMonth,
+            lt: startOfThisMonth,
+          },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.subscription.count({
+        where: {
+          status: 'active',
+          startDate: { gte: startOfThisMonth },
+        },
+      }),
+      this.prisma.subscription.count({
+        where: {
+          status: 'active',
+          startDate: {
+            gte: startOfLastMonth,
+            lt: startOfThisMonth,
+          },
+        },
+      }),
     ]);
+
+    const activeSubscriptionRate = totalOrgs > 0 ? Math.round((activeSubscriptions / totalOrgs) * 100) : 0;
+
+    const thisMonthSum = revenueThisMonth._sum.amount || 0;
+    const lastMonthSum = revenueLastMonth._sum.amount || 0;
+
+    const revenueGrowthPercent = lastMonthSum > 0
+      ? Math.round(((thisMonthSum - lastMonthSum) / lastMonthSum) * 100)
+      : (thisMonthSum > 0 ? 100 : 0);
+
+    const subscriptionGrowthPercent = activeSubsLastMonth > 0
+      ? Math.round(((activeSubsThisMonth - activeSubsLastMonth) / activeSubsLastMonth) * 100)
+      : (activeSubsThisMonth > 0 ? 100 : 0);
+
+    const activeSubsTotalLastMonth = await this.prisma.subscription.count({
+      where: {
+        status: 'active',
+        startDate: { lt: startOfThisMonth },
+      },
+    });
+
+    const arpuThisMonth = activeSubscriptions > 0 ? thisMonthSum / activeSubscriptions : 0;
+    const arpuLastMonth = activeSubsTotalLastMonth > 0 ? lastMonthSum / activeSubsTotalLastMonth : 0;
+
+    const arpuGrowthPercent = arpuLastMonth > 0
+      ? Math.round(((arpuThisMonth - arpuLastMonth) / arpuLastMonth) * 100)
+      : (arpuThisMonth > 0 ? 100 : 0);
 
     return {
       totalOrganizations: totalOrgs,
@@ -173,6 +257,12 @@ export class AnalyticsService {
       totalDevices,
       totalEntriesCaptured: totalEntries,
       platformRevenue: totalRevenue._sum.amount || 0,
+      orgsThisMonth,
+      entriesToday,
+      activeSubscriptionRate,
+      revenueGrowthPercent,
+      subscriptionGrowthPercent,
+      arpuGrowthPercent,
     };
   }
 

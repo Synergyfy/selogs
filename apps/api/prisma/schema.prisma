@@ -79,6 +79,7 @@ model Organization {
   invoices       Invoice[]
   addons         OrganizationAddon[]
   paymentMethods PaymentMethod[]
+  notifications Notification[]
 
   @@map("organizations")
 }
@@ -322,6 +323,21 @@ model User {
 
   @@index([deletedAt])
   @@map("users")
+}
+
+model Notification {
+  id              String   @id @default(uuid())
+  organizationId  String   @map("organization_id")
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  type            String   // alert, payment, system
+  title           String
+  message         String
+  priority        String   @default("medium") // low, medium, high
+  read            Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId, read, createdAt])
+  @@map("notifications")
 }
 
 model GlobalSettings {

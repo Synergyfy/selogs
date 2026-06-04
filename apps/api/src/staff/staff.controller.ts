@@ -26,9 +26,8 @@ import {
   StaffCheckInDto,
   ShiftResponseDto,
 } from './dto/staff.dto';
-import { Roles } from '../auth/decorators';
+import { Roles, Public, GetCurrentUser } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
-import { GetCurrentUser } from '../auth/decorators';
 import { Capability } from '../common/capabilities';
 
 @ApiTags('staff')
@@ -37,6 +36,14 @@ import { Capability } from '../common/capabilities';
 @Controller('staff')
 export class StaffController {
   constructor(private readonly staffService: StaffService) {}
+
+  @Public()
+  @ApiOperation({ summary: 'List active staff members publicly for device login/pairing' })
+  @ApiResponse({ status: 200, type: [StaffResponseDto] })
+  @Get('public/:orgId')
+  async findActiveStaffPublic(@Param('orgId') orgId: string): Promise<StaffResponseDto[]> {
+    return this.staffService.findActiveStaffPublic(orgId);
+  }
 
   @ApiOperation({ summary: 'Create a new staff member (Admin only)' })
   @ApiResponse({ status: 201, type: StaffResponseDto })

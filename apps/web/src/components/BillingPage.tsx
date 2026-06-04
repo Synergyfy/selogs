@@ -7,15 +7,19 @@ import {
   Plus,
   ShieldCheck,
   Calendar,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
-import { useInvoicesList, usePaymentMethods } from '../hooks/dashboard/useBilling';
+import { useInvoicesList, usePaymentMethods, useSetDefaultPaymentMethod } from '../hooks/dashboard/useBilling';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 const BillingPage: React.FC = () => {
   const [page] = useState(1);
+  const navigate = useNavigate();
   const { data: invoicesData, isLoading: isLoadingInvoices } = useInvoicesList(page, 20);
   const { data: paymentMethods = [], isLoading: isLoadingMethods } = usePaymentMethods();
+  const setDefaultMethod = useSetDefaultPaymentMethod();
 
   const invoices = invoicesData?.items || [];
 
@@ -24,6 +28,14 @@ const BillingPage: React.FC = () => {
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: '2-digit' });
+
+  const handleSetDefault = async (id: string) => {
+    try {
+      await setDefaultMethod.mutateAsync(id);
+    } catch (err) {
+      console.error('Failed to set default method', err);
+    }
+  };
 
   return (
     <div className="dashboard-overview">
@@ -39,7 +51,9 @@ const BillingPage: React.FC = () => {
         <div className="content-card">
           <div className="card-header">
             <h3>Payment Methods</h3>
-            <button className="btn-text"><Plus size={16} /> Add New</button>
+            <button className="btn-text" onClick={() => navigate('/dashboard/subscription')}>
+              <Plus size={16} /> Add New
+            </button>
           </div>
 
           {isLoadingMethods ? (
@@ -48,17 +62,31 @@ const BillingPage: React.FC = () => {
             </div>
           ) : paymentMethods.length > 0 ? (
             paymentMethods.map((method, i) => (
-              <div key={i} className="v-stat" style={{ background: 'var(--bg-input)', padding: '20px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-light)', marginBottom: '12px' }}>
+              <div key={i} className="v-stat" style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-light)', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div className="stat-icon-wrapper blue" style={{ width: '48px', height: '48px' }}>
-                    <CreditCard size={24} />
+                  <div className="stat-icon-wrapper blue" style={{ width: '40px', height: '40px' }}>
+                    <CreditCard size={20} />
                   </div>
                   <div>
-                    <strong style={{ display: 'block', fontSize: '16px' }}>{method.brand} ending in {method.last4}</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Expires {method.expMonth}/{method.expYear}{method.isDefault ? ' • Default Method' : ''}</span>
+                    <strong style={{ display: 'block', fontSize: '15px' }}>{method.brand} ending in {method.last4}</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                      Expires {method.expMonth}/{method.expYear}
+                      {method.isDefault && <span style={{ color: 'var(--accent)', marginLeft: '8px', fontWeight: 700 }}>• Default</span>}
+                    </span>
                   </div>
                 </div>
-                {method.isDefault && <span className="status-badge synced">DEFAULT</span>}
+                {!method.isDefault ? (
+                  <button 
+                    className="btn-glass-sm" 
+                    style={{ fontSize: '11px' }}
+                    onClick={() => handleSetDefault(method.id)}
+                    disabled={setDefaultMethod.isPending}
+                  >
+                    {setDefaultMethod.isPending ? <Loader2 size={12} className="spin" /> : 'Set Default'}
+                  </button>
+                ) : (
+                  <CheckCircle2 size={18} className="text-emerald" />
+                )}
               </div>
             ))
           ) : (
@@ -69,7 +97,7 @@ const BillingPage: React.FC = () => {
                 </div>
                 <div>
                   <strong style={{ display: 'block', fontSize: '16px' }}>No payment methods found</strong>
-                  <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Add a card to enable automatic billing</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Subscribe to a plan to save a card.</span>
                 </div>
               </div>
             </div>

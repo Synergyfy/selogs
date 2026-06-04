@@ -24,9 +24,8 @@ import {
   UpdateDeviceDto,
   DeviceResponseDto,
 } from './dto/device.dto';
-import { Roles } from '../auth/decorators';
+import { Roles, Public, GetCurrentUser } from '../auth/decorators';
 import { RolesGuard } from '../auth/guards';
-import { GetCurrentUser } from '../auth/decorators';
 import { Capability } from '../common/capabilities';
 
 @ApiTags('devices')
@@ -35,6 +34,14 @@ import { Capability } from '../common/capabilities';
 @Controller('devices')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
+
+  @Public()
+  @ApiOperation({ summary: 'Validate organization code for device connection' })
+  @ApiResponse({ status: 200 })
+  @Get('validate-org/:code')
+  async validateOrg(@Param('code') code: string) {
+    return this.devicesService.validateOrganizationCode(code);
+  }
 
   @ApiOperation({ summary: 'Register a new handheld device (Admin only)' })
   @ApiResponse({ status: 201, type: DeviceResponseDto })

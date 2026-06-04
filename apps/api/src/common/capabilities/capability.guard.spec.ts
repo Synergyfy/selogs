@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Role } from '@prisma/client';
 import { CapabilityGuard } from './capability.guard';
 import { CapabilityService } from './capability.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { CAPABILITY_KEY, CapabilitySnapshot } from './capability.types';
 
 
@@ -39,6 +40,7 @@ describe('CapabilityGuard', () => {
     resolve: jest.Mock;
     getUsageCounts: jest.Mock;
   };
+  const mockNotifications = { create: jest.fn() };
 
   beforeEach(async () => {
     reflector = { getAllAndOverride: jest.fn() };
@@ -52,6 +54,7 @@ describe('CapabilityGuard', () => {
         CapabilityGuard,
         { provide: Reflector, useValue: reflector },
         { provide: CapabilityService, useValue: capabilityService },
+        { provide: NotificationsService, useValue: mockNotifications },
       ],
     }).compile();
 

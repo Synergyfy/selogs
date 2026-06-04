@@ -1,5 +1,6 @@
 import { db, type AppNotification } from './db';
 import { v4 as uuidv4 } from 'uuid';
+import { NotificationsApiService } from './NotificationsApiService';
 
 class NotificationService {
   /**
@@ -36,62 +37,34 @@ class NotificationService {
   }
 
   /**
-   * Check for critical system events and trigger notifications
+   * Sync notifications from the server API into Dexie.
+   * Fetches the latest notifications and upserts them locally.
    */
-  async checkLifecycleEvents(orgInfo: { id: string, joinedDate: number, plan: string }) {
-    const now = Date.now();
-    const trialDuration = 14 * 24 * 60 * 60 * 1000; // 14 days
-    const trialExpiry = orgInfo.joinedDate + trialDuration;
-    const daysRemaining = Math.ceil((trialExpiry - now) / (1000 * 60 * 60 * 24));
-
-    // 1. Trial Ending Notification (3 days threshold)
-    if (daysRemaining <= 3 && daysRemaining > 0) {
-      const existing = await db.notifications
-        .where('type').equals('alert')
-        .and(n => n.title.includes('Trial Ending'))
-        .count();
-
-      if (existing === 0) {
-        await this.addNotification({
-          type: 'alert',
-          title: 'Trial Ending Soon',
-          message: `Your 14-day free trial will expire in ${daysRemaining} days. Upgrade now to avoid service interruption.`,
-          priority: 'high',
-          orgId: orgInfo.id
-        });
+  async syncFromApi(_orgId: string): Promise<void> {
+    try {
+      const { data } = await NotificationsApiService.getAll(50, 0);
+      for (const n of data) {
+        const existing = await db.notifications.get(n.id);
+        if (existing) {
+          await db.notifications.update(n.id, {
+            read: n.read,
+          });
+        } else {
+          await db.notifications.add({
+            id: n.id,
+            type: (n.type as AppNotification['type']) || 'system',
+            title: n.title,
+            message: n.message,
+            timestamp: new Date(n.createdAt).getTime(),
+            read: n.read,
+            priority: (n.priority as AppNotification['priority']) || 'medium',
+            orgId: n.organizationId,
+          });
+        }
       }
+    } catch (err) {
+      console.error('Failed to sync notifications from API:', err);
     }
-
-    // 2. Trial Expired Notification
-    if (daysRemaining <= 0) {
-      const existing = await db.notifications
-        .where('type').equals('alert')
-        .and(n => n.title.includes('Trial Expired'))
-        .count();
-
-      if (existing === 0) {
-        await this.addNotification({
-          type: 'alert',
-          title: 'Trial Expired',
-          message: 'Your trial period has ended. Access to advanced features has been restricted.',
-          priority: 'high',
-          orgId: orgInfo.id
-        });
-      }
-    }
-  }
-
-  /**
-   * Simulate a Payment Success notification
-   */
-  async notifyPaymentSuccess(orgId: string, amount: string) {
-    await this.addNotification({
-      type: 'payment',
-      title: 'Payment Successful',
-      message: `Your payment of ${amount} was processed successfully. Thank you for your subscription!`,
-      priority: 'medium',
-      orgId
-    });
   }
 }
 

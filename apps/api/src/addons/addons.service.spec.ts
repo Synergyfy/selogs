@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AddonsService } from './addons.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { PaystackService } from '../paystack/paystack.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('AddonsService', () => {
@@ -17,14 +18,14 @@ describe('AddonsService', () => {
     },
   };
 
+  const mockPaystack = {};
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AddonsService,
-        {
-          provide: PrismaService,
-          useValue: mockPrisma,
-        },
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: PaystackService, useValue: mockPaystack },
       ],
     }).compile();
 

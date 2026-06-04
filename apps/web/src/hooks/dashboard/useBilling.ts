@@ -16,10 +16,10 @@ export const usePaymentMethods = () => {
   });
 };
 
-export const useAddPaymentMethod = () => {
+export const useSetDefaultPaymentMethod = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: BillingService.addPaymentMethod,
+    mutationFn: BillingService.setDefaultPaymentMethod,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'payment-methods'] });
     },

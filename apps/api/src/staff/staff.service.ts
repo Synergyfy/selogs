@@ -324,4 +324,32 @@ export class StaffService {
 
     return staffId;
   }
+
+  /**
+   * Public fetch of active guards list for a given organization.
+   */
+  async findActiveStaffPublic(organizationId: string): Promise<StaffResponseDto[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        organizationId,
+        role: { in: [Role.supervisor, Role.guard] },
+        deletedAt: null,
+      },
+      include: {
+        branch: true,
+      },
+      orderBy: { fullName: 'asc' },
+    });
+
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName || undefined,
+      staffId: user.staffId || undefined,
+      role: user.role,
+      branchId: user.branchId || undefined,
+      branchName: user.branch?.name,
+      createdAt: user.createdAt,
+    }));
+  }
 }

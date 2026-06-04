@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Shield, Link2, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ConnectDevice.css';
+import api from '../services/api';
 
 interface ConnectDeviceProps {
-  onConnect: (orgCode: string, orgName: string) => void;
+  onConnect: (orgCode: string, orgName: string, orgId: string) => void;
 }
 
 const ConnectDevice: React.FC<ConnectDeviceProps> = ({ onConnect }) => {
@@ -14,14 +15,6 @@ const ConnectDevice: React.FC<ConnectDeviceProps> = ({ onConnect }) => {
   const [success, setSuccess] = useState(false);
   const [orgName, setOrgName] = useState('');
 
-  // Mock organization validation
-  const VALID_ORGS: Record<string, string> = {
-    'VGRD-8821-X': 'Sunrise Estate Security',
-    'VGRD-1234-A': 'Grand Hotel Lagos',
-    'VGRD-5678-B': 'TechPark Office Complex',
-    'DEMO': 'VGuard Demo Organization',
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
@@ -29,23 +22,25 @@ const ConnectDevice: React.FC<ConnectDeviceProps> = ({ onConnect }) => {
     setError('');
     setLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
     const upperCode = code.trim().toUpperCase();
-    const matchedOrg = VALID_ORGS[upperCode];
 
-    if (matchedOrg) {
-      setOrgName(matchedOrg);
+    try {
+      // API call to validate org
+      const response = await api.get(`/devices/validate-org/${upperCode}`);
+      const { id, name } = response.data;
+      
+      setOrgName(name);
       setSuccess(true);
+      
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
       
       setTimeout(() => {
-        onConnect(upperCode, matchedOrg);
+        onConnect(upperCode, name, id);
       }, 2000);
-    } else {
-      setError('Invalid organization code. Please check with your administrator.');
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Invalid organization code. Please check with your administrator.';
+      setError(msg);
       setLoading(false);
       if (navigator.vibrate) navigator.vibrate(100);
     }

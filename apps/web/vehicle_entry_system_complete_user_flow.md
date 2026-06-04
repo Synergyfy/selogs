@@ -170,6 +170,30 @@ System saves:
 
 ---
 
+## 13.5 Check-Out Vehicle
+
+### Guard taps:
+- Check-Out Vehicle
+
+### System shows:
+- Active vehicles list (currently inside)
+- Search by plate number
+
+### Guard selects vehicle:
+- Views check-in time
+- Views duration stayed
+
+### Guard confirms:
+- Tap Confirm Exit
+- Status updated to OUT
+
+### System saves:
+- Check-out timestamp
+- Check-out staff ID
+- Sync Status (Not Synced)
+
+---
+
 ## 14. Sync Process
 
 ### Automatic:
@@ -284,8 +308,9 @@ System saves:
 11. Staff enters ID
 12. Captures entries
 13. Data saved offline
-14. Syncs to server
-15. Admin views dashboard
+14. Checks out vehicles (search → select → confirm)
+15. Syncs to server
+16. Admin views dashboard
 
 ---
 

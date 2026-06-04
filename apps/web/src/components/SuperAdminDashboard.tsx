@@ -8,7 +8,6 @@ import {
   ArrowUpRight, 
   Clock,
   Activity,
-  AlertCircle
 } from 'lucide-react';
 import './Dashboard.css'; // Reusing base grid styles
 
@@ -25,28 +24,28 @@ const SuperAdminDashboard: React.FC = () => {
     { 
       title: "Total Organizations", 
       value: statsLoading ? "..." : stats?.totalOrganizations.toString() || "0", 
-      change: "+12 this month", 
+      change: statsLoading ? "..." : `+${stats?.orgsThisMonth || 0} this month`, 
       icon: <Building2 size={24} />, 
       color: "indigo" 
     },
     { 
       title: "Platform Revenue", 
       value: statsLoading ? "..." : `₦${(stats?.platformRevenue || 0).toLocaleString()}`, 
-      change: "+18%", 
+      change: statsLoading ? "..." : `${(stats?.revenueGrowthPercent || 0) >= 0 ? '+' : ''}${stats?.revenueGrowthPercent || 0}%`, 
       icon: <DollarSign size={24} />, 
       color: "emerald" 
     },
     { 
       title: "Active Subscriptions", 
       value: statsLoading ? "..." : stats?.activeSubscriptions.toString() || "0", 
-      change: "69% rate", 
+      change: statsLoading ? "..." : `${stats?.activeSubscriptionRate || 0}% rate`, 
       icon: <ShieldCheck size={24} />, 
       color: "blue" 
     },
     { 
       title: "Total Logs Captured", 
       value: statsLoading ? "..." : `${((stats?.totalEntriesCaptured || 0) / 1000).toFixed(1)}k`, 
-      change: "+42k today", 
+      change: statsLoading ? "..." : `+${stats?.entriesToday || 0} today`, 
       icon: <Activity size={24} />, 
       color: "amber" 
     },
@@ -168,11 +167,6 @@ const SuperAdminDashboard: React.FC = () => {
                 <span key={i}>{new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
               ))}
             </div>
-          </div>
-          
-          <div className="sa-alert-box" style={{ marginTop: '24px', padding: '16px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px', display: 'flex', gap: '12px', alignItems: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-            <AlertCircle className="text-red" size={20} />
-            <span style={{ fontSize: '13px', color: '#f87171' }}><strong>Critical:</strong> 4 trial accounts expiring in the next 24 hours.</span>
           </div>
         </motion.div>
       </div>

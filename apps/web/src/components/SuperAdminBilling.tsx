@@ -25,21 +25,21 @@ const SuperAdminBilling: React.FC = () => {
     { 
       title: "Total Revenue", 
       value: revenueLoading ? "..." : `₦${(revenueData?.totalRevenue || 0).toLocaleString()}`, 
-      change: "+12.5%", 
+      change: statsLoading ? "..." : `${(statsData?.revenueGrowthPercent || 0) >= 0 ? '+' : ''}${statsData?.revenueGrowthPercent || 0}%`, 
       icon: <DollarSign size={24} />, 
       color: "emerald" 
     },
     { 
       title: "Active Subscriptions", 
       value: statsLoading ? "..." : statsData?.activeSubscriptions.toString() || "0", 
-      change: "72% growth", 
+      change: statsLoading ? "..." : `${(statsData?.subscriptionGrowthPercent || 0) >= 0 ? '+' : ''}${statsData?.subscriptionGrowthPercent || 0}% growth`, 
       icon: <TrendingUp size={24} />, 
       color: "blue" 
     },
     { 
       title: "Average ARPU", 
       value: statsLoading && revenueLoading ? "..." : `₦${((revenueData?.totalRevenue || 0) / (statsData?.activeSubscriptions || 1)).toLocaleString()}`, 
-      change: "+5% vs LY", 
+      change: statsLoading ? "..." : `${(statsData?.arpuGrowthPercent || 0) >= 0 ? '+' : ''}${statsData?.arpuGrowthPercent || 0}% vs last month`, 
       icon: <Building2 size={24} />, 
       color: "amber" 
     },

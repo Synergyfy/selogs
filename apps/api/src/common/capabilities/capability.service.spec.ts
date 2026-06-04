@@ -38,7 +38,7 @@ const basePlan = (overrides: Partial<{
 /** Factory for an active subscription */
 const activeSubscription = (planOverrides = {}) => ({
   status: SubscriptionStatus.active,
-  endDate: null,
+  nextBillingDate: null,
   plan: basePlan(planOverrides),
 });
 
@@ -86,7 +86,7 @@ describe('CapabilityService', () => {
       prismaMock.organization.findUnique.mockResolvedValue(
         makeOrgResult({
           status: SubscriptionStatus.trialing,
-          endDate: null,
+          nextBillingDate: null,
           plan: basePlan(),
         }),
       );
@@ -96,12 +96,12 @@ describe('CapabilityService', () => {
       expect(snapshot.isSubscriptionActive).toBe(true);
     });
 
-    it('returns isSubscriptionActive=false when endDate is in the past', async () => {
+    it('returns isSubscriptionActive=false when nextBillingDate is in the past', async () => {
       const yesterday = new Date(Date.now() - 86_400_000);
       prismaMock.organization.findUnique.mockResolvedValue(
         makeOrgResult({
           status: SubscriptionStatus.active,
-          endDate: yesterday,
+          nextBillingDate: yesterday,
           plan: basePlan(),
         }),
       );
@@ -115,7 +115,7 @@ describe('CapabilityService', () => {
       prismaMock.organization.findUnique.mockResolvedValue(
         makeOrgResult({
           status: SubscriptionStatus.canceled,
-          endDate: null,
+          nextBillingDate: null,
           plan: basePlan(),
         }),
       );

@@ -4,6 +4,12 @@ export interface GlobalStats {
   totalDevices: number;
   totalEntriesCaptured: number;
   platformRevenue: number;
+  orgsThisMonth: number;
+  revenueGrowthPercent: number;
+  activeSubscriptionRate: number;
+  entriesToday: number;
+  subscriptionGrowthPercent: number;
+  arpuGrowthPercent: number;
 }
 
 export interface TrendData {

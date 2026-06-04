@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -19,12 +19,15 @@ import {
   Zap,
   Search,
   User,
-  ChevronDown
+  ChevronDown,
+  ArrowLeftRight,
+  Car
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { useAuth } from '../hooks/useAuth';
+import { notificationService } from '../services/NotificationService';
 import NotificationCenter from './NotificationCenter';
 import type { ThemeMode } from '../types';
 import './DashboardLayout.css';
@@ -47,14 +50,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, themeMode, 
     db.notifications.where('read').equals(0).count()
   ) || 0;
 
+  useEffect(() => {
+    if (user?.organizationId) {
+      notificationService.syncFromApi(user.organizationId);
+    }
+  }, [user?.organizationId]);
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const navItems = [
     { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Overview' },
     { path: '/dashboard/entries', icon: <List size={20} />, label: 'Vehicle Entries' },
+    { path: '/dashboard/active-vehicles', icon: <Car size={20} />, label: 'Active Vehicles' },
     { path: '/dashboard/branches', icon: <Building2 size={20} />, label: 'Branches' },
+    { path: '/dashboard/gates', icon: <ArrowLeftRight size={20} />, label: 'Gates' },
     { path: '/dashboard/staff', icon: <Users size={20} />, label: 'Staff' },
     { path: '/dashboard/devices', icon: <Smartphone size={20} />, label: 'Devices' },
+    { path: '/dashboard/notifications', icon: <Bell size={20} />, label: 'Notifications' },
     { path: '/dashboard/subscription', icon: <Zap size={20} />, label: 'Subscription' },
     { path: '/dashboard/billing', icon: <CreditCard size={20} />, label: 'Billing' },
     { path: '/dashboard/settings', icon: <Settings size={20} />, label: 'Settings' },

@@ -57,4 +57,9 @@ export const addonsService = {
   async deleteAddon(id: string): Promise<void> {
     await api.delete(`/addons/${id}`);
   },
+
+  async purchaseAddonStandalone(addonId: string, quantity: number = 1): Promise<{ success: boolean; message: string }> {
+    const response = await api.post('/addons/purchase', { addonId, quantity });
+    return response.data;
+  },
 };

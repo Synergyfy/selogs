@@ -213,4 +213,23 @@ export class DevicesService {
       where: { id },
     });
   }
+
+  /**
+   * Validate organization code for device pairing.
+   */
+  async validateOrganizationCode(code: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { code },
+    });
+
+    if (!org) {
+      throw new NotFoundException(`Organization with code ${code} not found`);
+    }
+
+    return {
+      id: org.id,
+      name: org.name,
+      code: org.code,
+    };
+  }
 }

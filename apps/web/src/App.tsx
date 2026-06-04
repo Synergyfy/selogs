@@ -22,9 +22,12 @@ import EntriesPage from './components/EntriesPage'
 import StaffManagement from './components/StaffManagement'
 import DevicesPage from './components/DevicesPage'
 import BranchesPage from './components/BranchesPage'
+import GatesPage from './components/GatesPage'
+import ActiveVehiclesPage from './components/ActiveVehiclesPage'
 import SubscriptionPage from './components/SubscriptionPage'
 import BillingPage from './components/BillingPage'
 import SettingsPage from './components/SettingsPage'
+import NotificationsPage from './components/NotificationsPage'
 import SuperAdminLayout from './components/SuperAdminLayout'
 import SuperAdminDashboard from './components/SuperAdminDashboard'
 import SuperAdminCustomers from './components/SuperAdminCustomers'
@@ -43,6 +46,7 @@ import PricingPage from './components/PricingPage'
 import FeaturesPage from './components/FeaturesPage'
 import IndustriesPage from './components/IndustriesPage'
 import { db, type VehicleEntry } from './services/db'
+import { syncService } from './services/SyncService'
 import type { ThemeMode } from './types'
 import './App.css'
 
@@ -54,7 +58,7 @@ type Screen = 'connect' | 'checkin' | 'home' | 'new_entry' | 'history' | 'check_
 function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleTheme: () => void }) {
   const [screen, setScreen] = useState<Screen>('connect')
   const [staff, setStaff] = useState<{ id: string; name?: string } | null>(null)
-  const [orgInfo, setOrgInfo] = useState<{ code: string; name: string } | null>(null)
+  const [orgInfo, setOrgInfo] = useState<{ code: string; name: string; id: string } | null>(null)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [unsyncedCount, setUnsyncedCount] = useState(0)
   const [isSyncing, setIsSyncing] = useState(false)
@@ -78,19 +82,18 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
   useEffect(() => {
     const handleOnline = async () => {
       setIsOnline(true);
-      showToast('Back online! Syncing...', 'info');
       const unsynced = await db.entries.where('synced').equals(0).toArray();
       if (unsynced.length > 0) {
+        showToast('Back online! Syncing...', 'info');
         setIsSyncing(true);
-        setTimeout(async () => {
-          for (const entry of unsynced) {
-            await db.entries.update(entry.id, { synced: true });
-          }
+        try {
+          await syncService.syncAll();
+        } finally {
           const count = await db.entries.where('synced').equals(0).count();
           setUnsyncedCount(count);
           setIsSyncing(false);
-          showToast(`${unsynced.length} records synced!`, 'success');
-        }, 1500);
+          showToast(`${unsynced.length - count} records synced!`, 'success');
+        }
       }
     };
     
@@ -139,8 +142,8 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
   }, [])
 
   // Connect device to organization
-  const handleConnect = (orgCode: string, orgName: string) => {
-    const info = { code: orgCode, name: orgName };
+  const handleConnect = (orgCode: string, orgName: string, orgId: string) => {
+    const info = { code: orgCode, name: orgName, id: orgId };
     setOrgInfo(info);
     localStorage.setItem('orgInfo', JSON.stringify(info));
     setScreen('checkin');
@@ -205,16 +208,15 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
     }
 
     setIsSyncing(true);
-
-    setTimeout(async () => {
-      for (const entry of unsynced) {
-        await db.entries.update(entry.id, { synced: true })
-      }
-      const count = await db.entries.where('synced').equals(0).count()
-      setUnsyncedCount(count)
+    try {
+      await syncService.syncAll();
+    } finally {
+      const count = await db.entries.where('synced').equals(0).count();
+      setUnsyncedCount(count);
       setIsSyncing(false);
-      showToast(`Successfully synced ${unsynced.length} records.`, 'success');
-    }, 1500)
+      const synced = unsynced.length - count;
+      showToast(synced > 0 ? `Successfully synced ${synced} records.` : 'Sync complete.', 'success');
+    }
   }
 
   const handleEndShift = async () => {
@@ -244,6 +246,7 @@ function MobileApp({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleThem
         <StaffCheckIn 
           onCheckIn={handleCheckIn} 
           orgName={orgInfo?.name}
+          orgId={orgInfo?.id}
         />
       )}
       {screen === 'home' && (
@@ -373,12 +376,15 @@ function App() {
         <Route path="/app/*" element={<MobileApp theme={effectiveTheme} toggleTheme={toggleTheme} />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><Dashboard /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/entries" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><EntriesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/active-vehicles" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><ActiveVehiclesPage /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/branches" element={<ProtectedRoute allowedRoles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BranchesPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/gates" element={<ProtectedRoute allowedRoles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><GatesPage /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/staff" element={<ProtectedRoute allowedRoles={['admin', 'supervisor']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><StaffManagement /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/devices" element={<ProtectedRoute allowedRoles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><DevicesPage /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/subscription" element={<ProtectedRoute allowedRoles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SubscriptionPage /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/billing" element={<ProtectedRoute allowedRoles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><BillingPage /></DashboardLayout></ProtectedRoute>} />
         <Route path="/dashboard/settings" element={<ProtectedRoute allowedRoles={['admin']}><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><SettingsPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/notifications" element={<ProtectedRoute><DashboardLayout themeMode={themeMode} setThemeMode={setThemeMode}><NotificationsPage /></DashboardLayout></ProtectedRoute>} />
         
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['super_admin']}><SuperAdminLayout themeMode={themeMode} setThemeMode={setThemeMode}><SuperAdminDashboard /></SuperAdminLayout></ProtectedRoute>} />

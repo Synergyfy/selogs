@@ -14,7 +14,7 @@ export const BillingService = {
     return response.data;
   },
 
-  addPaymentMethod: async (reference: string): Promise<void> => {
-    await api.post('/billing/payment-methods', { reference });
+  setDefaultPaymentMethod: async (id: string): Promise<void> => {
+    await api.post(`/billing/payment-methods/${id}/default`);
   },
 };

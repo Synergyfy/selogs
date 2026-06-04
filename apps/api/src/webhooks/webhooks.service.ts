@@ -1,9 +1,10 @@
-import { Injectable, Logger, RawBodyRequest } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../paystack/paystack.service';
-import { Request } from 'express';
-import { SubscriptionStatus } from '@prisma/client';
-import { BillingCycle } from '../subscriptions/dto/checkout.dto'; // Wait, BillingCycle is now in @prisma/client
+import { NotificationsService } from '../notifications/notifications.service';
+import type { Request } from 'express';
+import { SubscriptionStatus, BillingCycle } from '@prisma/client';
 
 @Injectable()
 export class WebhooksService {
@@ -12,6 +13,7 @@ export class WebhooksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly paystack: PaystackService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async handlePaystackWebhook(req: RawBodyRequest<Request>) {
@@ -182,6 +184,15 @@ export class WebhooksService {
       }
     });
 
+    // 6. Send payment success notification
+    await this.notifications.create({
+      organizationId,
+      type: 'payment',
+      title: 'Payment Successful',
+      message: `Your payment of ₦${amount.toLocaleString()} was processed successfully. Thank you for your subscription!`,
+      priority: 'medium',
+    });
+
     this.logger.log(`Successfully processed charge.success for org ${organizationId}`);
   }
 
@@ -241,6 +252,14 @@ export class WebhooksService {
       data: {
         status: SubscriptionStatus.past_due,
       }
+    });
+
+    await this.notifications.create({
+      organizationId: sub.organizationId,
+      type: 'alert',
+      title: 'Payment Failed',
+      message: 'Your recent payment could not be processed. Your subscription is now past due — update your payment method to avoid service interruption.',
+      priority: 'high',
     });
   }
 

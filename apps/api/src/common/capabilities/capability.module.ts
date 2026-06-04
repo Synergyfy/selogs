@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CapabilityService } from './capability.service';
 import { CapabilityGuard } from './capability.guard';
+import { NotificationsModule } from '../../notifications/notifications.module';
 
 /**
  * Declares CapabilityService and CapabilityGuard.
@@ -10,6 +11,7 @@ import { CapabilityGuard } from './capability.guard';
  * @Capability() decorator is present).
  */
 @Module({
+  imports: [NotificationsModule],
   providers: [CapabilityService, CapabilityGuard],
   exports: [CapabilityService, CapabilityGuard],
 })

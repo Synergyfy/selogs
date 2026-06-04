@@ -123,3 +123,4 @@ Desktop.ini
 
 # TypeScript diagnostics
 tsconfig.tsbuildinfo
+.aider*

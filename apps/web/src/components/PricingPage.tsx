@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Check, Plus, Minus } from 'lucide-react';
+import { Check, Plus, Minus, Loader2 } from 'lucide-react';
 import PublicHeader from './PublicHeader';
 import PublicFooter from './PublicFooter';
 import type { ThemeMode } from '../types';
+import { usePlans } from '../hooks/usePlans';
+import { useInitializeCheckout, useStartTrial } from '../hooks/dashboard/useSubscription';
+import { usePaystackPayment } from '../hooks/usePaystackPayment';
+import { useAuth } from '../hooks/useAuth';
 import './PricingPage.css';
 
 interface PricingPageProps {
@@ -27,24 +31,78 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 
 const PricingPage: React.FC<PricingPageProps> = ({ themeMode, setThemeMode }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: plans, isLoading } = usePlans();
+  const initializeCheckout = useInitializeCheckout();
+  const startTrial = useStartTrial();
+  const launchPaystack = usePaystackPayment();
 
-  const calculatePrice = (monthlyPrice: number) => {
-    if (billingCycle === 'yearly') {
-      return Math.round((monthlyPrice * 12 * 0.8) / 12); // 20% discount
+  const handleSelectPlan = async (plan: any) => {
+    if (!user) {
+      navigate('/create-account');
+      return;
     }
-    if (billingCycle === 'quarterly') {
-      return Math.round((monthlyPrice * 3 * 0.9) / 3); // 10% discount
+
+    if (plan.isFree) {
+      // Logic for selecting free plan if any
+      return;
     }
-    return monthlyPrice;
+
+    setIsProcessing(plan.id);
+    try {
+      const { accessCode } = await initializeCheckout.mutateAsync({
+        planId: plan.id,
+        billingCycle,
+      });
+
+      launchPaystack({
+        accessCode,
+        onSuccess: () => {
+          navigate('/dashboard');
+        },
+        onCancel: () => {
+          setIsProcessing(null);
+        },
+      });
+    } catch (err) {
+      console.error('Checkout failed', err);
+      setIsProcessing(null);
+    }
   };
 
-  const getBilledText = (monthlyPrice: number) => {
+  const handleStartTrial = async (plan: any) => {
+    if (!user) {
+      navigate('/create-account');
+      return;
+    }
+
+    setIsProcessing(`trial-${plan.id}`);
+    try {
+      await startTrial.mutateAsync(plan.id);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Trial start failed', err);
+      setIsProcessing(null);
+    }
+  };
+
+  const getPrice = (plan: any) => {
+    if (plan.isFree) return 'Free';
+    if (billingCycle === 'yearly') return plan.yearlyPrice;
+    if (billingCycle === 'quarterly') return plan.quarterlyPrice;
+    return plan.monthlyPrice;
+  };
+
+  const getBilledText = (plan: any) => {
+    if (plan.isFree) return null;
+    const price = getPrice(plan);
     if (billingCycle === 'yearly') {
-      return `Billed ₦${(calculatePrice(monthlyPrice) * 12).toLocaleString()} yearly`;
+      return `Billed ₦${(price * 12).toLocaleString()} yearly`;
     }
     if (billingCycle === 'quarterly') {
-      return `Billed ₦${(calculatePrice(monthlyPrice) * 3).toLocaleString()} quarterly`;
+      return `Billed ₦${(price * 3).toLocaleString()} quarterly`;
     }
     return null;
   };
@@ -64,7 +122,7 @@ const PricingPage: React.FC<PricingPageProps> = ({ themeMode, setThemeMode }) =>
             className="hero-content centered"
           >
             <h1 className="hero-title">Transparent, <span className="text-gradient">Scalable Pricing</span></h1>
-            <p className="hero-subtitle">Choose the perfect plan for your organization's security needs. All plans include a 14-day free trial.</p>
+            <p className="hero-subtitle">Choose the perfect plan for your organization's security needs. Most plans include a free trial.</p>
             
             {/* Billing Toggle (3-way) */}
             <div className="billing-cycle-selector">
@@ -78,13 +136,13 @@ const PricingPage: React.FC<PricingPageProps> = ({ themeMode, setThemeMode }) =>
                 className={`cycle-btn ${billingCycle === 'quarterly' ? 'active' : ''}`}
                 onClick={() => setBillingCycle('quarterly')}
               >
-                Quarterly <span className="save-tag">-10%</span>
+                Quarterly
               </button>
               <button 
                 className={`cycle-btn ${billingCycle === 'yearly' ? 'active' : ''}`}
                 onClick={() => setBillingCycle('yearly')}
               >
-                Yearly <span className="save-tag">-20%</span>
+                Yearly
               </button>
             </div>
           </motion.div>
@@ -93,68 +151,55 @@ const PricingPage: React.FC<PricingPageProps> = ({ themeMode, setThemeMode }) =>
 
       <section className="pricing-plans">
         <div className="container">
-          <div className="pricing-grid">
-            {/* Starter Plan */}
-            <div className="pricing-card">
-              <div className="card-header">
-                <h3>Starter</h3>
-                <p>For small facilities or single gates.</p>
-                <div className="price">
-                  ₦{calculatePrice(5000).toLocaleString()}<span>/mo</span>
+          {isLoading ? (
+            <div className="flex-center" style={{ padding: '64px' }}>
+              <Loader2 className="spin" size={48} />
+            </div>
+          ) : (
+            <div className="pricing-grid">
+              {plans?.map((plan: any) => (
+                <div key={plan.id} className={`pricing-card ${plan.name.toLowerCase() === 'business' ? 'featured' : ''}`}>
+                  {plan.name.toLowerCase() === 'business' && <div className="popular-tag">MOST POPULAR</div>}
+                  <div className="card-header">
+                    <h3>{plan.name}</h3>
+                    <p>{plan.description || `Perfect for your ${plan.name.toLowerCase()} needs.`}</p>
+                    <div className="price">
+                      {typeof getPrice(plan) === 'number' ? `₦${getPrice(plan).toLocaleString()}` : getPrice(plan)}
+                      {typeof getPrice(plan) === 'number' && <span>/mo</span>}
+                    </div>
+                    {getBilledText(plan) && <p className="billed-yearly">{getBilledText(plan)}</p>}
+                  </div>
+                  <ul className="plan-features">
+                    <li><Check className="icon-xs" /> {plan.branchLimit} Location{plan.branchLimit !== 1 ? 's' : ''}</li>
+                    <li><Check className="icon-xs" /> Up to {plan.staffLimit} Staff Members</li>
+                    <li><Check className="icon-xs" /> Up to {plan.deviceLimit} Devices</li>
+                    {plan.hasOcr && <li><Check className="icon-xs" /> OCR Plate Recognition</li>}
+                    {plan.hasAnalytics && <li><Check className="icon-xs" /> Advanced Analytics</li>}
+                    {plan.hasExport && <li><Check className="icon-xs" /> Data Export (CSV/PDF)</li>}
+                  </ul>
+                  
+                  <div className="flex-col gap-12" style={{ marginTop: 'auto' }}>
+                    {plan.trialEnabled && (
+                      <button 
+                        className="btn-outline" 
+                        onClick={() => handleStartTrial(plan)}
+                        disabled={!!isProcessing}
+                      >
+                        {isProcessing === `trial-${plan.id}` ? <Loader2 size={18} className="spin" /> : `Start ${plan.trialDays}-Day Free Trial`}
+                      </button>
+                    )}
+                    <button 
+                      className={plan.name.toLowerCase() === 'business' ? 'btn-premium' : 'btn-outline'} 
+                      onClick={() => handleSelectPlan(plan)}
+                      disabled={!!isProcessing}
+                    >
+                      {isProcessing === plan.id ? <Loader2 size={18} className="spin" /> : plan.isFree ? 'Get Started' : 'Subscribe Now'}
+                    </button>
+                  </div>
                 </div>
-                {getBilledText(5000) && <p className="billed-yearly">{getBilledText(5000)}</p>}
-              </div>
-              <ul className="plan-features">
-                <li><Check className="icon-xs" /> 1 Location (Branch)</li>
-                <li><Check className="icon-xs" /> Up to 5 Staff Members</li>
-                <li><Check className="icon-xs" /> Basic Reporting</li>
-                <li><Check className="icon-xs" /> OCR Plate Recognition</li>
-                <li><Check className="icon-xs" /> Offline Mode</li>
-              </ul>
-              <button className="btn-outline" onClick={() => navigate('/create-account')}>Start 14-Day Free Trial</button>
+              ))}
             </div>
-
-            {/* Business Plan */}
-            <div className="pricing-card featured">
-              <div className="popular-tag">MOST POPULAR</div>
-              <div className="card-header">
-                <h3>Business</h3>
-                <p>For growing estates and hotel chains.</p>
-                <div className="price">
-                  ₦{calculatePrice(15000).toLocaleString()}<span>/mo</span>
-                </div>
-                {getBilledText(15000) && <p className="billed-yearly">{getBilledText(15000)}</p>}
-              </div>
-              <ul className="plan-features">
-                <li><Check className="icon-xs" /> Up to 5 Locations</li>
-                <li><Check className="icon-xs" /> Up to 20 Staff Members</li>
-                <li><Check className="icon-xs" /> Advanced Analytics & Charts</li>
-                <li><Check className="icon-xs" /> CSV & PDF Data Export</li>
-                <li><Check className="icon-xs" /> Custom Branding (Logo/Colors)</li>
-                <li><Check className="icon-xs" /> Priority Email Support</li>
-              </ul>
-              <button className="btn-premium" onClick={() => navigate('/create-account')}>Start 14-Day Free Trial</button>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className="pricing-card">
-              <div className="card-header">
-                <h3>Enterprise</h3>
-                <p>For large-scale security operations.</p>
-                <div className="price">Custom</div>
-                <p className="contact-subtext">Tailored to your needs</p>
-              </div>
-              <ul className="plan-features">
-                <li><Check className="icon-xs" /> Unlimited Locations</li>
-                <li><Check className="icon-xs" /> Unlimited Staff Members</li>
-                <li><Check className="icon-xs" /> Full API Access</li>
-                <li><Check className="icon-xs" /> Dedicated Account Manager</li>
-                <li><Check className="icon-xs" /> Custom Feature Development</li>
-                <li><Check className="icon-xs" /> 24/7 Phone Support</li>
-              </ul>
-              <button className="btn-outline" onClick={() => navigate('/contact')}>Contact Sales</button>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 

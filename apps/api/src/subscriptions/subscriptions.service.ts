@@ -3,8 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { PlansService } from '../plans/plans.service';
 import { CapabilityService } from '../common/capabilities';
-import { InitializeSubscriptionDto, BillingCycle } from './dto/initialize-subscription.dto';
-import { SubscriptionStatus } from '@prisma/client';
+import { CheckoutDto } from './dto/checkout.dto';
+import { SubscriptionStatus, BillingCycle } from '@prisma/client';
 
 @Injectable()
 export class SubscriptionsService {

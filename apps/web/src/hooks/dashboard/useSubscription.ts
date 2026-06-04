@@ -10,20 +10,26 @@ export const useMySubscription = () => {
   });
 };
 
-export const useInitializeSubscription = () => {
+export const useInitializeCheckout = () => {
+  return useMutation({
+    mutationFn: SubscriptionService.initializeCheckout,
+  });
+};
+
+export const useStartTrial = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: SubscriptionService.initializeSubscription,
+    mutationFn: SubscriptionService.startTrial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'subscription'] });
     },
   });
 };
 
-export const useVerifySubscription = () => {
+export const useCancelSubscription = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: SubscriptionService.verifySubscription,
+    mutationFn: SubscriptionService.cancelSubscription,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'subscription'] });
     },

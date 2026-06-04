@@ -2,6 +2,7 @@ import api from './api';
 
 export interface OrgProfile {
   name: string;
+  code?: string;
   location?: string;
   systemName?: string;
   logoUrl?: string;

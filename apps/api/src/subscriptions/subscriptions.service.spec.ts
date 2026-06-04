@@ -3,6 +3,7 @@ import { SubscriptionsService } from './subscriptions.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { PlansService } from '../plans/plans.service';
+import { CapabilityService } from '../common/capabilities';
 import { NotFoundException } from '@nestjs/common';
 
 describe('SubscriptionsService', () => {
@@ -40,6 +41,10 @@ describe('SubscriptionsService', () => {
     findOne: jest.fn(),
   };
 
+  const mockCapability = {
+    resolve: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -47,6 +52,7 @@ describe('SubscriptionsService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: PaystackService, useValue: mockPaystack },
         { provide: PlansService, useValue: mockPlans },
+        { provide: CapabilityService, useValue: mockCapability },
       ],
     }).compile();
 
@@ -74,6 +80,15 @@ describe('SubscriptionsService', () => {
       mockPrisma.branch.count.mockResolvedValue(2);
       mockPrisma.user.count.mockResolvedValue(4);
       mockPrisma.device.count.mockResolvedValue(1);
+      mockCapability.resolve.mockResolvedValue({
+        isSubscriptionActive: true,
+        branchLimit: 5,
+        staffLimit: 10,
+        deviceLimit: 3,
+        hasOcr: false,
+        hasAnalytics: false,
+        hasExport: false,
+      });
 
       const result = await service.getOrgSubscription('org-1');
 

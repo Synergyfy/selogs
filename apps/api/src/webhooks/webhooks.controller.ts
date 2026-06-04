@@ -1,6 +1,7 @@
-import { Controller, Post, Req, Res, RawBodyRequest } from '@nestjs/common';
+import { Controller, Post, Req, Res } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('webhooks')

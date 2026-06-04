@@ -9,6 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
 import { CapabilityService } from './capability.service';
 import { CAPABILITY_KEY, CapabilityType } from './capability.types';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 /**
  * CapabilityGuard — subscription-aware access control.
@@ -32,6 +33,7 @@ export class CapabilityGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly capabilityService: CapabilityService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -71,6 +73,13 @@ export class CapabilityGuard implements CanActivate {
       case 'branch:create': {
         const { branches } = await this.capabilityService.getUsageCounts(organizationId);
         if (branches >= snapshot.branchLimit) {
+          await this.notifications.create({
+            organizationId,
+            type: 'alert',
+            title: 'Branch Limit Reached',
+            message: `You've reached the branch limit of ${snapshot.branchLimit}. Upgrade your plan or purchase an add-on to add more.`,
+            priority: 'high',
+          });
           throw new ForbiddenException(
             `Branch limit reached. Your current plan allows ${snapshot.branchLimit} branch(es). Upgrade your plan or purchase an add-on to add more.`,
           );
@@ -81,6 +90,13 @@ export class CapabilityGuard implements CanActivate {
       case 'staff:create': {
         const { staff } = await this.capabilityService.getUsageCounts(organizationId);
         if (staff >= snapshot.staffLimit) {
+          await this.notifications.create({
+            organizationId,
+            type: 'alert',
+            title: 'Staff Limit Reached',
+            message: `You've reached the staff limit of ${snapshot.staffLimit}. Upgrade your plan or purchase an add-on to add more staff.`,
+            priority: 'high',
+          });
           throw new ForbiddenException(
             `Staff limit reached. Your current plan allows ${snapshot.staffLimit} staff member(s). Upgrade your plan or purchase an add-on to add more.`,
           );
@@ -91,6 +107,13 @@ export class CapabilityGuard implements CanActivate {
       case 'device:create': {
         const { devices } = await this.capabilityService.getUsageCounts(organizationId);
         if (devices >= snapshot.deviceLimit) {
+          await this.notifications.create({
+            organizationId,
+            type: 'alert',
+            title: 'Device Limit Reached',
+            message: `You've reached the device limit of ${snapshot.deviceLimit}. Upgrade your plan or purchase an add-on to add more devices.`,
+            priority: 'high',
+          });
           throw new ForbiddenException(
             `Device limit reached. Your current plan allows ${snapshot.deviceLimit} device(s). Upgrade your plan or purchase an add-on to add more.`,
           );

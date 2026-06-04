@@ -1,22 +1,46 @@
-import React, { useState } from 'react';
-import { UserCheck, ArrowRight, Shield, Clock, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { UserCheck, ArrowRight, Shield, Clock, Users, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../services/api';
+
+interface ActiveStaffMember {
+  staffId: string;
+  fullName?: string;
+}
 
 interface StaffCheckInProps {
   onCheckIn: (staffId: string, staffName?: string) => void;
   orgName?: string;
+  orgId?: string;
 }
 
-const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn }) => {
+const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn, orgId }) => {
   const [staffId, setStaffId] = useState('');
   const [staffName, setStaffName] = useState('');
+  const [activeStaff, setActiveStaff] = useState<ActiveStaffMember[]>([]);
+  const [isLoadingStaff, setIsLoadingStaff] = useState(false);
 
-  // Mock active staff for the organization
-  const activeStaff = [
-    { id: 'SEC-001', name: 'Samuel Okon' },
-    { id: 'SEC-002', name: 'John Doe' },
-    { id: 'SEC-003', name: 'Mary Jane' },
-  ];
+  useEffect(() => {
+    if (!orgId) return;
+
+    const fetchStaff = async () => {
+      setIsLoadingStaff(true);
+      try {
+        const response = await api.get(`/staff/public/${orgId}`);
+        const staff = response.data
+          .filter((s: any) => s.staffId) // only include staff with a staffId
+          .map((s: any) => ({ staffId: s.staffId, fullName: s.fullName }));
+        setActiveStaff(staff);
+      } catch (err) {
+        // Silently fail — guard can still log in manually
+        console.warn('Could not fetch staff list:', err);
+      } finally {
+        setIsLoadingStaff(false);
+      }
+    };
+
+    fetchStaff();
+  }, [orgId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +50,7 @@ const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn }) => {
     }
   };
 
-  const handleQuickSelect = (id: string, name: string) => {
+  const handleQuickSelect = (id: string, name?: string) => {
     if (navigator.vibrate) navigator.vibrate(30);
     onCheckIn(id, name);
   };
@@ -57,32 +81,41 @@ const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn }) => {
         </div>
       </div>
 
-      <div className="checkin-quick-select">
-        <p className="section-label">
-          <Users size={12} />
-          Active Staff
-        </p>
-        <div className="staff-grid-mini">
-          {activeStaff.map((staff, index) => (
-            <motion.button 
-              key={staff.id} 
-              className="staff-chip"
-              onClick={() => handleQuickSelect(staff.id, staff.name)}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 * index, duration: 0.3 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <div className="staff-avatar-xs">{staff.name.charAt(0)}</div>
-              <div className="staff-chip-info">
-                <span className="chip-name">{staff.name}</span>
-                <span className="chip-id">{staff.id}</span>
+      {(activeStaff.length > 0 || isLoadingStaff) && (
+        <div className="checkin-quick-select">
+          <p className="section-label">
+            <Users size={12} />
+            Active Staff
+          </p>
+          <div className="staff-grid-mini">
+            {isLoadingStaff ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 0', color: 'var(--text-dim)', fontSize: 13 }}>
+                <Loader2 size={16} className="animate-spin" />
+                Loading staff list...
               </div>
-              <ArrowRight size={16} className="staff-chip-arrow" />
-            </motion.button>
-          ))}
+            ) : (
+              activeStaff.map((staff, index) => (
+                <motion.button 
+                  key={staff.staffId} 
+                  className="staff-chip"
+                  onClick={() => handleQuickSelect(staff.staffId, staff.fullName)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.3 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <div className="staff-avatar-xs">{(staff.fullName || staff.staffId).charAt(0)}</div>
+                  <div className="staff-chip-info">
+                    <span className="chip-name">{staff.fullName || staff.staffId}</span>
+                    <span className="chip-id">{staff.staffId}</span>
+                  </div>
+                  <ArrowRight size={16} className="staff-chip-arrow" />
+                </motion.button>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="checkin-divider">
         <span>or enter manually</span>
@@ -95,7 +128,7 @@ const StaffCheckIn: React.FC<StaffCheckInProps> = ({ onCheckIn }) => {
             id="staffId"
             type="text"
             className="form-input"
-            placeholder="e.g. SEC-001"
+            placeholder="e.g. VGD-12345"
             value={staffId}
             onChange={(e) => setStaffId(e.target.value)}
             required

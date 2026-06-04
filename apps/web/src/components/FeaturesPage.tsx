@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  WifiOff, Users, MapPin, Zap, Check
+  WifiOff, Users, MapPin, Zap, Check, LogOut, LogIn, ArrowLeftRight, Search, BarChart3
 } from 'lucide-react';
 import PublicHeader from './PublicHeader';
 import PublicFooter from './PublicFooter';
@@ -124,6 +124,86 @@ const FeaturesPage: React.FC<FeaturesPageProps> = ({ themeMode, setThemeMode }) 
                 <div className="map-node node-1">Victoria Island</div>
                 <div className="map-node node-2">Lekki Phase 1</div>
                 <div className="map-node node-3">Ikeja Branch</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature 5: Vehicle Check-Out */}
+          <div className="feature-detail-row">
+            <div className="feature-text">
+              <div className="feature-badge"><LogOut className="icon-xs" /> Fast Exit</div>
+              <h2>Lightning-Fast Vehicle Check-Out</h2>
+              <p>Checking vehicles out is as fast as searching for a plate. Security staff can quickly locate active entries and process exits in seconds, maintaining smooth traffic flow.</p>
+              <ul className="feature-list">
+                <li><Check className="icon-xs" /> Search by plate or phone number</li>
+                <li><Check className="icon-xs" /> Scan plate to auto-locate entry</li>
+                <li><Check className="icon-xs" /> Duration tracking at a glance</li>
+                <li><Check className="icon-xs" /> Complete audit trail for every exit</li>
+              </ul>
+            </div>
+            <div className="feature-visual">
+              <div className="visual-card checkout-preview">
+                <div style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 800, fontFamily: 'monospace', marginBottom: '8px' }}>ABC 123 XY</div>
+                  <div style={{ fontSize: '13px', opacity: 0.6 }}>Duration: 2h 15m</div>
+                  <div className="status-badge synced" style={{ marginTop: '12px', display: 'inline-flex' }}>Check-Out Ready</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature 6: Multi-Gate Support */}
+          <div className="feature-detail-row reverse">
+            <div className="feature-text">
+              <div className="feature-badge"><ArrowLeftRight className="icon-xs" /> Flexible</div>
+              <h2>Entry & Exit Gate Management</h2>
+              <p>Configure separate gates for entry and exit — or use combined gates for both directions. Every gate is independently managed and tracked for maximum flexibility.</p>
+              <ul className="feature-list">
+                <li><Check className="icon-xs" /> Dedicated entry and exit gates</li>
+                <li><Check className="icon-xs" /> Combined entry/exit gate support</li>
+                <li><Check className="icon-xs" /> Gate-specific vehicle reporting</li>
+                <li><Check className="icon-xs" /> Per-gate device assignment</li>
+              </ul>
+            </div>
+            <div className="feature-visual">
+              <div className="visual-card gate-preview">
+                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', padding: '16px' }}>
+                  <div className="status-badge synced" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <LogIn size={14} /> Entry
+                  </div>
+                  <div className="status-badge" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-hover)' }}>
+                    <LogOut size={14} /> Exit
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature 7: Reporting & Analytics */}
+          <div className="feature-detail-row">
+            <div className="feature-text">
+              <div className="feature-badge"><BarChart3 className="icon-xs" /> Insights</div>
+              <h2>Advanced Reporting & Search</h2>
+              <p>Powerful search and filtering tools make it easy to find any vehicle entry across your organization. Generate reports to analyze traffic patterns and staff performance.</p>
+              <ul className="feature-list">
+                <li><Check className="icon-xs" /> Full-text vehicle search</li>
+                <li><Check className="icon-xs" /> Date range and staff filters</li>
+                <li><Check className="icon-xs" /> Staff activity reports</li>
+                <li><Check className="icon-xs" /> CSV & PDF export support</li>
+              </ul>
+            </div>
+            <div className="feature-visual">
+              <div className="visual-card report-preview">
+                <div style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{ width: '40%', height: '8px', borderRadius: '4px', background: 'var(--accent)', opacity: 0.3 }} />
+                    <div style={{ width: '25%', height: '8px', borderRadius: '4px', background: 'var(--accent)', opacity: 0.15 }} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                    <Search size={14} />
+                    <span style={{ opacity: 0.6 }}>Search 12,450 entries...</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

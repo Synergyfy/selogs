@@ -22,6 +22,7 @@ import { GatesModule } from './gates/gates.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { AddonsModule } from './addons/addons.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerModule } from './scheduler/scheduler.module';
 
@@ -57,6 +58,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     AddonsModule,
     CapabilityModule,
     WebhooksModule,
+    NotificationsModule,
     ScheduleModule.forRoot(),
     SchedulerModule,
   ],

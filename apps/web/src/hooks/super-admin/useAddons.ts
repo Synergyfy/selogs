@@ -32,6 +32,14 @@ export const useAddons = (includeInactive = false) => {
     },
   });
 
+  const purchaseAddonMutation = useMutation({
+    mutationFn: ({ addonId, quantity }: { addonId: string; quantity: number }) => 
+      addonsService.purchaseAddonStandalone(addonId, quantity),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'subscription'] });
+    },
+  });
+
   return {
     addons: addonsQuery.data || [],
     isLoading: addonsQuery.isLoading,
@@ -43,5 +51,7 @@ export const useAddons = (includeInactive = false) => {
     isUpdating: updateAddonMutation.isPending,
     deleteAddon: deleteAddonMutation.mutate,
     isDeleting: deleteAddonMutation.isPending,
+    purchaseAddon: purchaseAddonMutation.mutate,
+    isPurchasing: purchaseAddonMutation.isPending,
   };
 };

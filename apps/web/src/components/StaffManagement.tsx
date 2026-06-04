@@ -5,7 +5,6 @@ import {
   Edit2, 
   Trash2, 
   User, 
-  Fingerprint, 
   Mail,
   X,
   Check,

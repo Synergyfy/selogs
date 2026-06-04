@@ -76,7 +76,7 @@ const LoginPage: React.FC = () => {
       {/* Form Side */}
       <div className="auth-form-side">
         <div className="auth-container-premium">
-          <motion.div 
+          <motion.div
             className="auth-card-premium"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,10 +95,10 @@ const LoginPage: React.FC = () => {
                 <label>Email Address</label>
                 <div className="input-field-wrapper">
                   <Mail className="input-icon" />
-                  <input 
-                    type="email" 
-                    name="email" 
-                    placeholder="name@organization.com" 
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="name@organization.com"
                     required
                     value={formData.email}
                     onChange={handleChange}
@@ -113,17 +113,17 @@ const LoginPage: React.FC = () => {
                 </div>
                 <div className="input-field-wrapper">
                   <Lock className="input-icon" />
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    name="password" 
-                    placeholder="••••••••" 
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="••••••••"
                     required
                     value={formData.password}
                     onChange={handleChange}
                   />
-                  <button 
-                    type="button" 
-                    className="eye-btn" 
+                  <button
+                    type="button"
+                    className="eye-btn"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -132,7 +132,7 @@ const LoginPage: React.FC = () => {
               </div>
 
               {loginError && (
-                <div style={{ color: 'var(--error)', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>
+                <div className="text-red-500 text-sm mb-4 text-center">
                   Invalid email or password. Please try again.
                 </div>
               )}
@@ -145,14 +145,14 @@ const LoginPage: React.FC = () => {
 
             <div className="auth-footer">
               <p>New to VGuard? <button onClick={() => navigate('/create-account')} className="link-btn">Create an account</button></p>
-              
+
               <div className="demo-logins" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-light)' }}>
                 <span style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700, display: 'block', marginBottom: '16px', textAlign: 'center' }}>⚡ Demo Quick Access</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                   <button 
-                    onClick={() => handleDemoLogin('/dashboard')} 
+                  <button
+                    onClick={() => handleDemoLogin('/dashboard')}
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
-                   >
+                  >
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <ShieldCheck size={20} style={{ color: '#6366f1' }} />
                     </div>
@@ -160,12 +160,12 @@ const LoginPage: React.FC = () => {
                       <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)', marginBottom: '2px' }}>Admin Dashboard</div>
                       <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Manage branches, staff, entries & billing</div>
                     </div>
-                   </button>
+                  </button>
 
-                   <button 
-                    onClick={() => handleDemoLogin('/super-admin')} 
+                  <button
+                    onClick={() => handleDemoLogin('/super-admin')}
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.08)', border: '1px solid rgba(251, 191, 36, 0.2)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
-                   >
+                  >
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(251, 191, 36, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Crown size={20} style={{ color: '#f59e0b' }} />
                     </div>
@@ -173,12 +173,12 @@ const LoginPage: React.FC = () => {
                       <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)', marginBottom: '2px' }}>Super Admin (Master)</div>
                       <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Platform-wide revenue, customers & settings</div>
                     </div>
-                   </button>
+                  </button>
 
-                   <button 
-                    onClick={() => navigate('/app')} 
+                  <button
+                    onClick={() => navigate('/app')}
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: 'rgba(96, 165, 250, 0.08)', border: '1px solid rgba(96, 165, 250, 0.2)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' }}
-                   >
+                  >
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(96, 165, 250, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Smartphone size={20} style={{ color: '#60a5fa' }} />
                     </div>
@@ -186,7 +186,7 @@ const LoginPage: React.FC = () => {
                       <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)', marginBottom: '2px' }}>Mobile App (Guard)</div>
                       <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Vehicle check-in, check-out & sync</div>
                     </div>
-                   </button>
+                  </button>
                 </div>
               </div>
             </div>

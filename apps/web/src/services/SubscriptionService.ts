@@ -6,12 +6,14 @@ export interface OrgSubscription {
   planId?: string;
   planName?: string;
   currentPeriodEnd?: string;
+  nextBillingDate?: string;
   cancelAtPeriodEnd?: boolean;
 }
 
-export interface InitializeSubscriptionDto {
+export interface CheckoutDto {
   planId: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'monthly' | 'quarterly' | 'yearly';
+  addonIds?: string[];
 }
 
 export const SubscriptionService = {
@@ -20,13 +22,18 @@ export const SubscriptionService = {
     return response.data;
   },
 
-  initializeSubscription: async (data: InitializeSubscriptionDto): Promise<{ authorizationUrl: string }> => {
-    const response = await api.post('/subscriptions/initialize', data);
+  initializeCheckout: async (data: CheckoutDto): Promise<{ accessCode: string; reference: string }> => {
+    const response = await api.post('/subscriptions/checkout', data);
     return response.data;
   },
 
-  verifySubscription: async (reference: string): Promise<OrgSubscription> => {
-    const response = await api.post(`/subscriptions/verify?reference=${reference}`);
+  startTrial: async (planId: string): Promise<OrgSubscription> => {
+    const response = await api.post(`/subscriptions/start-trial/${planId}`);
+    return response.data;
+  },
+
+  cancelSubscription: async (): Promise<{ message: string }> => {
+    const response = await api.post('/subscriptions/cancel');
     return response.data;
   },
 };
